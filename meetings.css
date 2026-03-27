@@ -1,0 +1,77 @@
+
+/* ══════════════════════════════════════════
+   MEETINGS PANEL
+══════════════════════════════════════════ */
+.meetings-panel {
+  background: var(--bg-panel);
+  border-radius: var(--radius);
+  padding: 30px 40px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.meetings-title {
+  font-size: clamp(1rem, 1.3vw, 1.3rem);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  margin-bottom: 12px;
+  flex-shrink: 0;
+}
+
+.meetings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--pill-border) transparent;
+}
+
+.meeting-card {
+  background: #2e354f;
+  border-radius: var(--radius-sm);
+  padding: 11px 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.meeting-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.meeting-topic {
+  font-weight: 600;
+  font-size: clamp(11px, 0.95vw, 13px);
+  line-height: 1.3;
+}
+
+.meeting-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 10px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.badge-active {
+  background: rgba(80, 220, 160, 0.18);
+  color: #50dca0;
+}
+
+.badge-break {
+  background: rgba(224, 64, 251, 0.18);
+  color: var(--accent-hot);
+}
+
+.meeting-person {
+  font-size: 11px;
+  color: var(--text-dim);
+}

@@ -1,0 +1,182 @@
+
+/* ══════════════════════════════════════════
+   TIMELINE PANEL
+══════════════════════════════════════════ */
+.timeline-panel {
+  background: var(--bg-panel);
+  border-radius: var(--radius);
+  padding: 16px 24px; /* Bajamos de 50px a 24px para aprovechar mejor el ancho */
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+
+
+.timeline-header {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 10px;
+  flex-shrink: 0;
+}
+
+.date-picker {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--pill-bg);
+  border: 1px solid var(--pill-border);
+  border-radius: 20px;
+  padding: 5px 13px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* ── Timeline Rows ── */
+.timeline-rows {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* Reparte el espacio entre filas */
+  flex: 1; /* Esto hace que el contenedor ocupe todo el alto disponible */
+  min-height: 0;
+  gap: 0; /* Quitamos el gap manual para que el espacio se gestione con flex-grow */
+}
+
+.t-row {
+  display: grid;
+  /* Definimos la estructura: Usuario | Barra | Tiempo */
+  grid-template-columns: clamp(180px, 22%, 300px) 1fr 80px; 
+  align-items: center;
+  gap: 20px;
+  flex: 1;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+/* Para que la última fila no tenga borde inferior */
+.t-row:last-child {
+  border-bottom: none;
+}
+
+.t-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0; /* Permite que el contenedor se encoja */
+}
+
+.t-avatar {
+  width: clamp(40px, 6vw, 70px);
+  height: clamp(40px, 6vw, 70px);
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: var(--bg-card);
+}
+
+.t-name {
+  font-size: clamp(0.68rem, 1.10vw, 1.3rem);
+  font-weight: 700;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Bar track */
+/* Modifica el contenedor del track */
+.t-track {
+  position: relative;
+  /* El alto que ya habías definido */
+  height: clamp(14px, 3vh, 60px); 
+  /* Fondo gris oscuro/azulado sutil para que no compita con el fondo general */
+  background: rgba(255, 255, 255, 0.05); 
+  /* Redondeado para que coincida con las barras */
+  border-radius: 20px; 
+  /* Opcional: un borde muy fino para darle profundidad */
+  border: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+/* Asegúrate de que las barras moradas estén por encima */
+.t-bar {
+    position: absolute;
+    height: 100%;
+    z-index: 1;
+    border-radius: 0; /* Recto por defecto */
+}
+
+.is-first {
+    border-top-left-radius: 20px;
+    border-bottom-left-radius: 20px;
+}
+
+.is-last {
+    border-top-right-radius: 20px;
+    border-bottom-right-radius: 20px;
+}
+/* Si un profesor solo tiene una barra, será first y last a la vez (totalmente redonda) */
+.is-first.is-last {
+    border-radius: 20px;
+}
+
+/* Efecto hover ajustado para no romper los bordes */
+.t-bar:hover {
+    filter: brightness(1.2);
+    transform: scaleY(1.1);
+    z-index: 10;
+}
+
+.bar-gradient {
+  /* 1. El degradado se aplica al tamaño total del contenedor padre (.t-track) */
+  background: linear-gradient(90deg, var(--accent-bar) 0%, var(--accent-hot) 100%);
+  background-attachment: fixed; 
+  background-origin: padding-box;
+  background-clip: border-box;
+  background-size: 100vw; /* El degradado se estira a lo ancho */
+  background-position: left center;
+}
+.bar-accent {
+  background: var(--accent-hot);
+  opacity: 0.85;
+}
+.bar-soft {
+  background: var(--accent-mid);
+  opacity: 0.55;
+}
+
+.t-duration {
+  text-align: right;
+  font-size: clamp(0.78rem, 1.1vw, 1rem);
+  font-weight: 700;
+}
+
+.timeline-axis {
+  display: grid;
+  /* Copiamos exactamente las columnas de .t-row */
+  grid-template-columns: clamp(180px, 22%, 300px) 1fr 80px;
+  gap: 20px;
+  
+  padding-top: 10px;
+  margin-top: 6px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  color: var(--text-muted);
+  font-size: 10px;
+}
+.axis-hours {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.axis-hours span {
+  width: 0;
+  display: flex;
+  justify-content: center;
+  white-space: nowrap;
+}
+
+/* Alineación de los extremos */
+.axis-hours span:first-child { justify-content: flex-start; }
+.axis-hours span:last-child { justify-content: flex-end; }
+

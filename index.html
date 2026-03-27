@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard Club Conversacional</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="timeline.css" />
+  <link rel="stylesheet" href="meetings.css" />
+</head>
+<body>
+
+  <div class="dashboard">
+
+    <!-- ── TOP SECTION ── -->
+    <div class="top-section">
+
+      <div class="title-block">
+        <h1>DASHBOARD<br>CLUB CONVERSACIONAL</h1>
+
+      </div>
+
+      <div class="chart-block">
+        <div class="date-picker-top" id="weeklyPickerBtn">
+          <span id="weeklyRangeText">23 - 29 Marzo</span>
+          <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
+            <path d="M2 4l4 4 4-4" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <input type="date" id="hiddenWeeklyInput" style="position: absolute; opacity: 0; width: 0; height: 0;">
+        </div>
+        <div class="chart-wrapper">
+          <canvas id="lineChart"></canvas>
+        </div>
+      </div>
+
+    </div><!-- /top-section -->
+
+    <!-- ── BOTTOM SECTION ── -->
+    <div class="bottom-section">
+
+      <!-- Timeline Panel -->
+      <div class="timeline-panel">
+        <div class="timeline-header">
+          <div class="date-picker" id="datePickerBtn">
+            <span id="currentDateText">26 Marzo</span>
+            <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
+              <path d="M2 4l4 4 4-4" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <input type="date" id="hiddenDateInput" style="position: absolute; opacity: 0; width: 0; height: 0;">
+          </div>
+        </div>
+
+        <div class="timeline-rows" id="timelineRows">
+          <!-- injected by app.js -->
+        </div>
+
+        <div class="timeline-axis">
+          <div></div> <div class="axis-hours">
+            <span>6 AM</span><span>7 AM</span><span>8 AM</span><span>9 AM</span>
+            <span>10 AM</span><span>11 AM</span><span>12 PM</span><span>1 PM</span>
+            <span>2 PM</span><span>3 PM</span><span>4 PM</span><span>5 PM</span>
+            <span>6 PM</span><span>7 PM</span><span>8 PM</span><span>9 PM</span><span>10 PM</span>
+          </div>
+
+          <div></div> </div>
+      </div>
+
+      <!-- Meetings Panel -->
+      <div class="meetings-panel">
+        <h2 class="meetings-title">Meetings</h2>
+        <div class="meetings-list" id="meetingsList">
+          <!-- injected by app.js -->
+        </div>
+      </div>
+
+    </div><!-- /bottom-section -->
+
+  </div><!-- /dashboard -->
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="app.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+</body>
+</html>

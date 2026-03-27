@@ -1,0 +1,246 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap');
+
+/* ══════════════════════════════════════════
+   CSS VARIABLES
+══════════════════════════════════════════ */
+:root {
+  --bg-deep:    #1F2640;
+  --bg-panel:   #252C46;
+  --bg-card:    #22204a;
+  --bg-card2:   #1e1c3a;
+  --accent-hot: #ad4ced;
+  --accent-bar: #f44fb5;
+  --text-main:  #ffffff;
+  --text-dim:   #8880b0;
+  --text-muted: #5a5580;
+  --pill-bg:    #2a2750;
+  --pill-border:#3a3760;
+  --radius:     14px;
+  --radius-sm:  8px;
+}
+
+/* ══════════════════════════════════════════
+   RESET & BASE
+══════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  width: 100%;
+  height: 100%;
+  background: var(--bg-deep);
+  font-family: 'Montserrat', sans-serif;
+  color: var(--text-main);
+  font-size: 14px;
+  overflow: hidden;
+}
+
+/* ══════════════════════════════════════════
+   ROOT WRAPPER — 100vh flex column
+══════════════════════════════════════════ */
+.dashboard {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  padding: 24px 32px;
+  gap: 16px;
+}
+
+/* ══════════════════════════════════════════
+   TOP SECTION
+══════════════════════════════════════════ */
+.top-section {
+  flex: 3; /* Aumentamos de 2 a 4 para que gane mucho más terreno vertical */
+  display: grid;
+  grid-template-columns: clamp(200px, 30%, 500px) 1fr;
+  align-items: center;
+  gap: 24px;
+  min-height: 0;
+}
+.title-block {
+  display: flex;
+  flex-direction: column; /* Alinea los elementos uno debajo del otro */
+  justify-content: flex-start; /* Empuja todo hacia arriba */
+  align-items: flex-start;    /* Alinea todo a la izquierda */
+  height: 100%;
+  background: var(--bg-panel);
+  padding: 30px; /* Reduje un poco el padding de 50px para ganar espacio para la imagen */
+  border-radius: var(--radius);
+  gap: 20px; /* Espacio entre el título y la imagen */
+}
+
+.title-block h1 {
+  font-family: 'Montserrat', sans-serif;
+  font-size: clamp(1.2rem, 2vw, 2rem); /* Ajustado ligeramente para dar aire a la imagen */
+  font-weight: 800;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+
+.title-image {
+  width: 100%;       /* Ocupa todo el ancho disponible del bloque */
+  flex: 1;           /* Hace que la imagen crezca para llenar el espacio sobrante */
+  object-fit: contain; /* Asegura que la imagen no se deforme */
+  object-position: left center; /* La mantiene pegada a la izquierda */
+}
+
+.chart-block {
+  position: relative;
+  background: var(--bg-panel);
+  border-radius: var(--radius);
+  padding: 50px 50px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.date-picker-top {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--pill-bg);
+  border: 1px solid var(--pill-border);
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  user-select: none;
+  z-index: 2;
+}
+
+.chart-wrapper {
+  flex: 1;
+  position: relative;
+  min-height: 0;
+}
+
+.chart-wrapper canvas {
+  position: absolute;
+  inset: 0;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* ══════════════════════════════════════════
+   BOTTOM SECTION
+══════════════════════════════════════════ */
+.bottom-section {
+  flex: 3;
+  display: grid;
+  grid-template-columns: 1fr clamp(300px, 30%, 450px);
+  gap: 16px;
+  min-height: 0;
+}
+
+
+/* ══════════════════════════════════════════
+   RESPONSIVE — LAPTOP  ≤ 1280px
+══════════════════════════════════════════ */
+@media (max-width: 1280px) {
+  .dashboard {
+    padding: 18px 22px;
+    gap: 14px;
+  }
+
+  .top-section {
+    grid-template-columns: clamp(160px, 20%, 240px) 1fr;
+    gap: 16px;
+  }
+
+  /* Hide every other axis label */
+  .timeline-axis span:nth-child(even) {
+    display: none;
+  }
+}
+
+/* ══════════════════════════════════════════
+   RESPONSIVE — TABLET  ≤ 900px
+   Scroll layout, sections stack vertically
+══════════════════════════════════════════ */
+@media (max-width: 900px) {
+  html, body { overflow: auto; }
+
+  .dashboard {
+    height: auto;
+    min-height: 100vh;
+    padding: 16px;
+    gap: 14px;
+  }
+
+  .top-section {
+    flex: none;
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .title-block { height: auto; }
+
+  .chart-block {
+    height: 220px;
+  }
+
+  .bottom-section {
+    flex: none;
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .timeline-panel {
+    min-height: 280px;
+  }
+
+  .meetings-list { overflow-y: visible; }
+
+  /* Restore all axis labels */
+  .timeline-axis span { display: inline; }
+  .timeline-axis span:nth-child(even) { display: none; }
+}
+
+/* ══════════════════════════════════════════
+   RESPONSIVE — MOBILE  ≤ 600px
+══════════════════════════════════════════ */
+@media (max-width: 600px) {
+  .dashboard {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .title-block h1 {
+    font-size: 1.5rem;
+  }
+
+  .chart-block {
+    height: 170px;
+    padding: 10px 10px 6px;
+  }
+
+  .date-picker-top {
+    font-size: 10px;
+    padding: 3px 9px;
+  }
+
+  /* Timeline row — 2-row layout on mobile */
+  .t-row {
+    display: grid;
+    /* Fijamos el ancho del usuario en 220px (puedes ajustar este número, pero úsalo abajo también) */
+    grid-template-columns: 220px 1fr 85px; 
+    align-items: center;
+    gap: 20px; 
+    flex: 1;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  }
+
+  .t-user   { grid-column: 1; grid-row: 1; }
+  .t-duration { grid-column: 2; grid-row: 1; font-size: 0.8rem; }
+  .t-track  { grid-column: 1 / -1; grid-row: 2; height: 10px; }
+
+  /* Only show every 3rd axis label */
+  .timeline-axis span            { display: none; }
+  .timeline-axis span:nth-child(3n+1) { display: inline; }
+
+  .meetings-panel  { padding: 12px 14px; }
+  .meeting-card    { padding: 9px 11px; }
+}
