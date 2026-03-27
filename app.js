@@ -76,28 +76,28 @@ function initTimeline() {
     if (!container) return;
     container.innerHTML = '';
 
-    // Filtramos los datos por la fecha seleccionada
+    // 1. Filtramos los datos por la fecha seleccionada
     const filteredLogs = globalAttendanceData.filter(log => log.join && log.join.startsWith(selectedDate));
 
     MASTER_TEACHERS.forEach(teacherName => {
         const teacherLogs = filteredLogs.filter(log => normalizeName(log.name) === teacherName);
         
-        // IMPORTANTE: Ordenar los logs por hora de inicio para que la lógica de bordes funcione
+        // IMPORTANTE: Ordenar para que la lógica de "is-first" e "is-last" sea correcta
         teacherLogs.sort((a, b) => new Date(a.join) - new Date(b.join));
 
         let totalMinutes = 0;
         let bars = [];
 
-        teacherLogs.forEach(log => {
+        teacherLogs.forEach((log, index) => {
             const joinDate = new Date(log.join);
             const leaveDate = log.leave ? new Date(log.leave) : new Date();
             
-            // Calculamos minutos totales del día para validar bordes
-            const startTotalMinutes = (joinDate.getHours() * 60 + joinDate.getMinutes());
-            const endTotalMinutes = (leaveDate.getHours() * 60 + leaveDate.getMinutes());
+            // Minutos totales desde las 00:00 para comparar con 6AM (360min) y 10PM (1320min)
+            const startTotalMin = (joinDate.getHours() * 60 + joinDate.getMinutes());
+            const endTotalMin = (leaveDate.getHours() * 60 + leaveDate.getMinutes());
 
             // Posicionamiento relativo al START_HOUR (6 AM)
-            const startMinutesRelative = startTotalMinutes - (START_HOUR * 60);
+            const startMinutesRelative = startTotalMin - (START_HOUR * 60);
             const left = (startMinutesRelative / (TOTAL_HOURS * 60)) * 100;
             
             const durationMin = (leaveDate - joinDate) / (1000 * 60);
@@ -105,18 +105,21 @@ function initTimeline() {
 
             if (log.leave) totalMinutes += durationMin;
 
-            // LÓGICA DE BORDES DINÁMICOS
+            // --- LÓGICA DE BORDES DINÁMICOS ---
             let borderClasses = "";
-            // Redondea izquierda solo si empieza a las 6:00 AM o antes
-            if (startTotalMinutes <= (START_HOUR * 60)) borderClasses += " is-first";
-            // Redondea derecha solo si termina a las 10:00 PM (22:00) o después
-            if (endTotalMinutes >= 22 * 60) borderClasses += " is-last";
+            // Redondea izquierda solo si empieza a las 6:00 AM
+            if (startTotalMin <= (START_HOUR * 60)) borderClasses += " is-first";
+            // Redondea derecha solo si termina a las 10:00 PM (22:00)
+            if (endTotalMin >= 22 * 60) borderClasses += " is-last";
 
+            // --- ESTE ES EL RETURN QUE BUSCABAS ---
             bars.push({
                 left: Math.max(0, left),
                 width: Math.max(0.8, width),
                 type: 'bar-gradient' + borderClasses, 
-                tooltip: `${joinDate.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})} - ${log.leave ? leaveDate.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : 'Activo'}`
+                tooltip: `${joinDate.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})} - ${log.leave ? leaveDate.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : 'Activo'}`,
+                // Texto que aparecerá al pasar el mouse (CSS data-time)
+                timeLabel: `${joinDate.getHours()}:${joinDate.getMinutes().toString().padStart(2, '0')} - ${log.leave ? leaveDate.getHours() + ':' + leaveDate.getMinutes().toString().padStart(2, '0') : 'Ahora'}`
             });
         });
 
@@ -129,16 +132,20 @@ function initTimeline() {
 function renderRow(container, user, bars, duration) {
     const row = document.createElement('div');
     row.className = 't-row';
-    const photoFileName = teacherPhotos[user.name];
-    const avatarUrl = photoFileName ? photoFileName : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=3a3760&color=fff&bold=true`;
+    const avatarUrl = teacherPhotos[user.name] || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}`;
 
     row.innerHTML = `
         <div class="t-user">
-            <img class="t-avatar" src="${avatarUrl}" alt="${user.name}" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=3a3760&color=fff'">
+            <img class="t-avatar" src="${avatarUrl}" alt="${user.name}">
             <span class="t-name">${user.name}</span>
         </div>
         <div class="t-track">
-            ${bars.map(bar => `<div class="t-bar ${bar.type}" style="left: ${bar.left}%; width: ${bar.width}%" title="${bar.tooltip}"></div>`).join('')}
+            ${bars.map(bar => `
+                <div class="t-bar ${bar.type}" 
+                     style="left: ${bar.left}%; width: ${bar.width}%" 
+                     data-time="${bar.timeLabel}" 
+                     title="${bar.tooltip}">
+                </div>`).join('')}
         </div>
         <div class="t-duration">${duration}</div>
     `;

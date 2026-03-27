@@ -103,7 +103,41 @@
     position: absolute;
     height: 100%;
     z-index: 1;
-    border-radius: 0; /* Recto por defecto */
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-radius: 0;
+    
+    /* Centrado para el texto que aparecerá */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.t-bar::after {
+    content: attr(data-time); /* Extrae el texto del atributo JS */
+    position: absolute;
+    top: -25px; /* Lo posiciona arriba de la barra */
+    left: 50%;
+    transform: translateX(-50%);
+    
+    background: rgba(34, 32, 74, 0.95);
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    white-space: nowrap;
+    
+    opacity: 0; /* Oculto por defecto */
+    transition: all 0.2s ease;
+    pointer-events: none;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+.t-bar:hover::after {
+    opacity: 1;
+    top: -30px; /* Pequeño salto hacia arriba al aparecer */
 }
 
 .is-first {
@@ -180,3 +214,4 @@
 .axis-hours span:first-child { justify-content: flex-start; }
 .axis-hours span:last-child { justify-content: flex-end; }
 
+/* --- Dentro de initTimeline --- */
