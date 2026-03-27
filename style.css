@@ -58,31 +58,34 @@ html, body {
 }
 .title-block {
   display: flex;
-  flex-direction: column; /* Alinea los elementos uno debajo del otro */
-  justify-content: flex-start; /* Empuja todo hacia arriba */
-  align-items: flex-start;    /* Alinea todo a la izquierda */
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   height: 100%;
   background: var(--bg-panel);
-  padding: 30px; /* Reduje un poco el padding de 50px para ganar espacio para la imagen */
+  padding: 30px;
   border-radius: var(--radius);
-  gap: 20px; /* Espacio entre el título y la imagen */
+  gap: 15px; /* Reduje un poco el gap para dar más aire */
+  overflow: hidden; /* EVITA que la imagen se salga del borde redondeado */
 }
 
 .title-block h1 {
   font-family: 'Montserrat', sans-serif;
-  font-size: clamp(1.2rem, 2vw, 2rem); /* Ajustado ligeramente para dar aire a la imagen */
+  font-size: clamp(1.2rem, 2vw, 1.8rem); /* Reduje el máximo un poco */
   font-weight: 800;
+  text-align: center;
   line-height: 1.1;
   text-transform: uppercase;
+  margin: 0; /* Asegura que no haya margenes fantasma empujando la imagen */
+  flex-shrink: 0; /* OBLIGA al título a no encogerse para darle espacio a la imagen */
 }
 
 .title-image {
-  width: 100%;       /* Ocupa todo el ancho disponible del bloque */
-  flex: 1;           /* Hace que la imagen crezca para llenar el espacio sobrante */
-  object-fit: contain; /* Asegura que la imagen no se deforme */
-  object-position: left center; /* La mantiene pegada a la izquierda */
+  width: 100%;
+  flex: 1; /* Ocupa TODO el espacio restante del contenedor */
+  min-height: 0; /* TRUCO CLAVE: permite que la imagen se encoja dentro de un flex container */
+  object-fit: contain; /* Mantiene la proporción sin deformar */
 }
-
 .chart-block {
   position: relative;
   background: var(--bg-panel);
