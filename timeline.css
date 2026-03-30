@@ -46,10 +46,10 @@
 
 .t-row {
   display: grid;
-  /* Definimos la estructura: Usuario | Barra | Tiempo */
-  grid-template-columns: clamp(180px, 22%, 300px) 1fr 80px; 
+  /* Bajamos el mínimo de 180px a 140px para dar más aire a la barra */
+  grid-template-columns: clamp(140px, 18%, 250px) 1fr 80px; 
   align-items: center;
-  gap: 20px;
+  gap: 12px; /* Reducimos el gap de 20px a 12px */
   flex: 1;
   border-bottom: 1px solid rgba(255, 255, 255, 0.03);
 }
@@ -67,8 +67,8 @@
 }
 
 .t-avatar {
-  width: clamp(40px, 6vw, 70px);
-  height: clamp(40px, 6vw, 70px);
+  width: clamp(20px, 6vw, 70px);
+  height: clamp(20px, 6vw, 70px);
   border-radius: 50%;
   object-fit: cover;
   flex-shrink: 0;
@@ -187,10 +187,8 @@
 
 .timeline-axis {
   display: grid;
-  /* Copiamos exactamente las columnas de .t-row */
-  grid-template-columns: clamp(180px, 22%, 300px) 1fr 80px;
-  gap: 20px;
-  
+  grid-template-columns: clamp(140px, 18%, 250px) 1fr 80px;
+  gap: 12px;
   padding-top: 10px;
   margin-top: 6px;
   border-top: 1px solid rgba(255,255,255,0.08);
@@ -215,3 +213,68 @@
 .axis-hours span:last-child { justify-content: flex-end; }
 
 /* --- Dentro de initTimeline --- */
+
+@media (max-width: 1640px) {
+  .axis-hours span {
+    font-size: 9px; /* Texto un poco más pequeño */
+  }
+
+  .axis-hours span:nth-child(even) {
+    display: none;
+  }
+
+  .t-avatar {
+    width: clamp(40px, 6vw, 60px);
+    height: clamp(40px, 6vw, 60px);
+  }
+}
+
+@media (max-width: 1024px) {
+
+  .axis-hours span {
+    display: none;
+  }
+  .axis-hours span:nth-child(3n+1) {
+    display: flex;
+  }
+}
+
+
+@media (max-width: 900px) {
+
+  .timeline-panel {
+    min-height: 280px;
+  }
+
+  .meetings-list { overflow-y: visible; }
+
+  /* Restore all axis labels */
+  .timeline-axis span { display: inline; }
+  .timeline-axis span:nth-child(even) { display: none; }
+}
+
+
+@media (max-width: 600px) {
+  
+  /* Timeline row — 2-row layout on mobile */
+  .t-row {
+    display: grid;
+    /* Fijamos el ancho del usuario en 220px (puedes ajustar este número, pero úsalo abajo también) */
+    grid-template-columns: 220px 1fr 85px; 
+    align-items: center;
+    gap: 20px; 
+    flex: 1;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  }
+
+  .t-user   { grid-column: 1; grid-row: 1; }
+  .t-duration { grid-column: 2; grid-row: 1; font-size: 0.8rem; }
+  .t-track  { grid-column: 1 / -1; grid-row: 2; height: 10px; }
+
+  /* Only show every 3rd axis label */
+  .timeline-axis span            { display: none; }
+  .timeline-axis span:nth-child(3n+1) { display: inline; }
+
+  .meetings-panel  { padding: 12px 14px; }
+  .meeting-card    { padding: 9px 11px; }
+}

@@ -153,10 +153,6 @@ html, body {
     gap: 16px;
   }
 
-  /* Hide every other axis label */
-  .timeline-axis span:nth-child(even) {
-    display: none;
-  }
 }
 
 /* ══════════════════════════════════════════
@@ -191,15 +187,6 @@ html, body {
     gap: 14px;
   }
 
-  .timeline-panel {
-    min-height: 280px;
-  }
-
-  .meetings-list { overflow-y: visible; }
-
-  /* Restore all axis labels */
-  .timeline-axis span { display: inline; }
-  .timeline-axis span:nth-child(even) { display: none; }
 }
 
 /* ══════════════════════════════════════════
@@ -224,26 +211,4 @@ html, body {
     font-size: 10px;
     padding: 3px 9px;
   }
-
-  /* Timeline row — 2-row layout on mobile */
-  .t-row {
-    display: grid;
-    /* Fijamos el ancho del usuario en 220px (puedes ajustar este número, pero úsalo abajo también) */
-    grid-template-columns: 220px 1fr 85px; 
-    align-items: center;
-    gap: 20px; 
-    flex: 1;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-  }
-
-  .t-user   { grid-column: 1; grid-row: 1; }
-  .t-duration { grid-column: 2; grid-row: 1; font-size: 0.8rem; }
-  .t-track  { grid-column: 1 / -1; grid-row: 2; height: 10px; }
-
-  /* Only show every 3rd axis label */
-  .timeline-axis span            { display: none; }
-  .timeline-axis span:nth-child(3n+1) { display: inline; }
-
-  .meetings-panel  { padding: 12px 14px; }
-  .meeting-card    { padding: 9px 11px; }
 }
