@@ -282,7 +282,7 @@ function initChart(data) {
                 },
                 x: { 
                     grid: { display: false }, 
-                    ticks: { color: '#8880b0' } 
+                    ticks: { color: '#ffffff' } 
                 }
             }
         }
