@@ -32,8 +32,7 @@ const teacherColors = {
 const today = new Date();
 const offset = today.getTimezoneOffset();
 const localToday = new Date(today.getTime() - (offset * 60 * 1000));
-let selectedDate = localToday.toISOString().split('T')[0];
-
+const selectedDate = today.toLocaleDateString('en-CA'); // en-CA siempre da YYYY-MM-DD
 /* ══════════════════════════════════════════
    LOGICA DE NORMALIZACIÓN DE NOMBRES
 ══════════════════════════════════════════ */
@@ -297,8 +296,16 @@ function setupDatePicker() {
     const btn = document.getElementById('datePickerBtn');
     const input = document.getElementById('hiddenDateInput');
     const text = document.getElementById('currentDateText');
+    
     if(!input || !btn) return;
+
+    // 1. Sincronizamos el valor inicial del input
     input.value = selectedDate;
+
+    // 2. Sincronizamos el texto inicial del botón con "Hoy"
+    const d = new Date(selectedDate + "T00:00:00");
+    if(text) text.textContent = d.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' });
+
     btn.addEventListener('click', () => input.showPicker());
     input.addEventListener('change', (e) => {
         selectedDate = e.target.value;
@@ -327,24 +334,15 @@ async function initMeetings() {
     list.innerHTML = '<div style="opacity:.6">Cargando meetings...</div>';
 
     try {
-        // CAMBIO CLAVE: Agregamos method: 'POST' y headers
         const response = await fetch(ZOOM_WEBHOOK, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            // Si tu flujo de n8n no necesita datos de entrada, 
-            // puedes enviar un objeto vacío o simplemente no incluir 'body'
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ consulta: "meetings_activos" }) 
         });
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
         const data = await response.json();
-
-        // Manejo flexible de la respuesta (array directo o propiedad .meetings)
         const meetings = Array.isArray(data) ? data : (data.meetings || []);
 
         list.innerHTML = '';
@@ -355,7 +353,8 @@ async function initMeetings() {
         }
 
         meetings.forEach(m => {
-            const status = mapMeetingStatus(m.estado, m.contador_actual);
+            // Ahora pasamos m.modo directamente
+            const status = mapMeetingStatus(m.modo);
             const teacherName = normalizeName(m.profesor);
 
             const card = document.createElement('div');
@@ -379,7 +378,7 @@ async function initMeetings() {
                 </div>
 
                 <div class="meeting-meta" style="margin-top:6px; font-size:12px; opacity:.7;">
-                    👥 ${m.contador_actual || 0} personas
+                    ${m.contador_actual || 0} personas
                 </div>
             `;
 
@@ -388,38 +387,36 @@ async function initMeetings() {
 
     } catch (error) {
         console.error("❌ Error cargando meetings:", error);
-        list.innerHTML = '<div style="color:red">Error cargando meetings (revisa CORS o método POST)</div>';
+        list.innerHTML = '<div style="color:red">Error cargando meetings</div>';
     }
 }
 
-function mapMeetingStatus(estado, contador) {
-    const s = (estado || '').toLowerCase();
+/* ══════════════════════════════════════════
+    LOGICA DE ESTADOS POR MODO
+   ══════════════════════════════════════════ */
+function mapMeetingStatus(modo) {
+    const m = (modo || '').toLowerCase();
 
-    // Sala con gente → activa
-    if (contador > 0) {
-        return { label: 'Active', badge: 'badge-active' };
+    if (m === 'activa') {
+        return { label: 'Activa', badge: 'badge-active' };
+    }
+    
+    if (m === 'break') {
+        return { label: 'Break', badge: 'badge-idle' }; // O una clase badge-warning si tienes
     }
 
-    // Disponible sin gente
-    if (s.includes('disponible')) {
-        return { label: 'Disponible', badge: 'badge-idle' };
+    if (m === 'finalizada') {
+        return { label: 'Finalizada', badge: 'badge-idle' };
     }
 
-    // Ocupada pero sin contador (fallback)
-    if (s.includes('ocupada')) {
-        return { label: 'Ocupada', badge: 'badge-active' };
-    }
-
-    return { label: 'Idle', badge: 'badge-idle' };
+    // Fallback por si llega algo distinto
+    return { label: modo, badge: 'badge-idle' };
 }
-
-setInterval(initMeetings, 30000); // cada 30s
 
 document.addEventListener('DOMContentLoaded', () => {
     setupDatePicker();
     setupWeeklyPicker();
     initMeetings();
     fetchDashboardData();
-
     setInterval(initMeetings, 30000);
 });

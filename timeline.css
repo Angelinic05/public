@@ -76,7 +76,7 @@
 }
 
 .t-name {
-  font-size: clamp(0.68rem, 1.10vw, 1.3rem);
+  font-size: clamp(0.68rem, 1vw, 1rem);
   font-weight: 700;
   text-transform: uppercase;
   white-space: nowrap;
@@ -155,15 +155,11 @@
 }
 
 /* Efecto hover ajustado para no romper los bordes */
-.t-bar:hover {
-    filter: brightness(1.2);
-    transform: scaleY(1.1);
-    z-index: 10;
-}
+
 
 .bar-gradient {
   /* 1. El degradado se aplica al tamaño total del contenedor padre (.t-track) */
-  background: linear-gradient(90deg, var(--accent-bar) 0%, var(--accent-hot) 100%);
+  background: linear-gradient(90deg, var(--accent-bar) 20%, var(--accent-hot) 80%);
   background-attachment: fixed; 
   background-origin: padding-box;
   background-clip: border-box;

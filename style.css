@@ -4,14 +4,13 @@
    CSS VARIABLES
 ══════════════════════════════════════════ */
 :root {
-  --bg-deep:    #1F2640;
-  --bg-panel:   #252C46;
+  --bg-deep:    #110626;
+  --bg-panel:   #251442;
   --bg-card:    #22204a;
   --bg-card2:   #1e1c3a;
-  --accent-hot: #ad4ced;
-  --accent-bar: #f44fb5;
+  --accent-hot: #7700ff;
+  --accent-bar: #ec5bb4;
   --text-main:  #ffffff;
-  --text-dim:   #8880b0;
   --text-muted: #5a5580;
   --pill-bg:    #2a2750;
   --pill-border:#3a3760;
