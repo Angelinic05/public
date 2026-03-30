@@ -276,7 +276,7 @@ function initChart(data) {
             scales: {
                 y: { 
                     min: 0, 
-                    max: 16, 
+                    max: 10, 
                     grid: { color: 'rgba(255,255,255,0.03)' }, 
                     ticks: { color: '#5a5580' } 
                 },
