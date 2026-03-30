@@ -2,6 +2,7 @@
    CONFIGURACIÓN Y VARIABLES GLOBALES
 ══════════════════════════════════════════ */
 const WEBHOOK_URL = 'https://n8n.srv1299698.hstgr.cloud/webhook/club';
+const ZOOM_WEBHOOK = 'https://n8n.srv1299698.hstgr.cloud/webhook/zooms';
 let globalAttendanceData = []; 
 let myLineChart;
 const START_HOUR = 6; 
@@ -319,27 +320,106 @@ function setupWeeklyPicker() {
     }
 }
 
-function initMeetings() {
+async function initMeetings() {
     const list = document.getElementById('meetingsList');
     if (!list) return;
-    list.innerHTML = '';
-    const tempMeetings = [
-        { topic: 'Q1 Strategy Planning', person: 'Christian Velilla', status: 'Active', badge: 'badge-active' },
-        { topic: 'English Level B2 - Session 4', person: 'Paula Londoño', status: 'Active', badge: 'badge-active' },
-        { topic: 'Teacher Sync - Weekly', person: 'Felipe Moreno', status: 'Break', badge: 'badge-break' },
-        { topic: 'Onboarding New Students', person: 'Felipe Valencia', status: 'Active', badge: 'badge-active' }
-    ];
-    tempMeetings.forEach(m => {
-        const card = document.createElement('div');
-        card.className = 'meeting-card';
-        card.innerHTML = `<div class="meeting-card-top"><div class="meeting-topic">${m.topic}</div><span class="meeting-badge ${m.badge}">${m.status}</span></div><div class="meeting-person">${m.person}</div>`;
-        list.appendChild(card);
-    });
+
+    list.innerHTML = '<div style="opacity:.6">Cargando meetings...</div>';
+
+    try {
+        // CAMBIO CLAVE: Agregamos method: 'POST' y headers
+        const response = await fetch(ZOOM_WEBHOOK, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            // Si tu flujo de n8n no necesita datos de entrada, 
+            // puedes enviar un objeto vacío o simplemente no incluir 'body'
+            body: JSON.stringify({ consulta: "meetings_activos" }) 
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        // Manejo flexible de la respuesta (array directo o propiedad .meetings)
+        const meetings = Array.isArray(data) ? data : (data.meetings || []);
+
+        list.innerHTML = '';
+
+        if (meetings.length === 0) {
+            list.innerHTML = '<div style="opacity:.6">No hay meetings activos</div>';
+            return;
+        }
+
+        meetings.forEach(m => {
+            const status = mapMeetingStatus(m.estado, m.contador_actual);
+            const teacherName = normalizeName(m.profesor);
+
+            const card = document.createElement('div');
+            card.className = 'meeting-card';
+
+            const avatarUrl = teacherPhotos[teacherName] 
+                || `https://ui-avatars.com/api/?name=${encodeURIComponent(m.profesor || 'User')}`;
+
+            card.innerHTML = `
+                <div class="meeting-card-top">
+                    <div class="meeting-topic">${m.nombre || 'Sin sala'}</div>
+                    <span class="meeting-badge ${status.badge}">
+                        ${status.label}
+                    </span>
+                </div>
+
+                <div class="meeting-person" style="display:flex; align-items:center; gap:8px;">
+                    <img src="${avatarUrl}" 
+                        style="width:20px; height:20px; border-radius:50%; object-fit: cover;" />
+                    ${teacherName}
+                </div>
+
+                <div class="meeting-meta" style="margin-top:6px; font-size:12px; opacity:.7;">
+                    👥 ${m.contador_actual || 0} personas
+                </div>
+            `;
+
+            list.appendChild(card);
+        });
+
+    } catch (error) {
+        console.error("❌ Error cargando meetings:", error);
+        list.innerHTML = '<div style="color:red">Error cargando meetings (revisa CORS o método POST)</div>';
+    }
 }
+
+function mapMeetingStatus(estado, contador) {
+    const s = (estado || '').toLowerCase();
+
+    // Sala con gente → activa
+    if (contador > 0) {
+        return { label: 'Active', badge: 'badge-active' };
+    }
+
+    // Disponible sin gente
+    if (s.includes('disponible')) {
+        return { label: 'Disponible', badge: 'badge-idle' };
+    }
+
+    // Ocupada pero sin contador (fallback)
+    if (s.includes('ocupada')) {
+        return { label: 'Ocupada', badge: 'badge-active' };
+    }
+
+    return { label: 'Idle', badge: 'badge-idle' };
+}
+
+setInterval(initMeetings, 30000); // cada 30s
 
 document.addEventListener('DOMContentLoaded', () => {
     setupDatePicker();
     setupWeeklyPicker();
     initMeetings();
-    fetchDashboardData(); 
+    fetchDashboardData();
+
+    setInterval(initMeetings, 30000);
 });
