@@ -32,7 +32,7 @@ const teacherColors = {
 const today = new Date();
 const offset = today.getTimezoneOffset();
 const localToday = new Date(today.getTime() - (offset * 60 * 1000));
-const selectedDate = today.toLocaleDateString('en-CA'); // en-CA siempre da YYYY-MM-DD
+let selectedDate = today.toLocaleDateString('en-CA'); // en-CA siempre da YYYY-MM-DD
 /* ══════════════════════════════════════════
    LOGICA DE NORMALIZACIÓN DE NOMBRES
 ══════════════════════════════════════════ */
