@@ -267,7 +267,7 @@ function initChart(data) {
             maintainAspectRatio: false,
             layout: {
                 padding: {
-                    top: 20 // Espacio para que no se corten los números arriba
+                    top: 10 // Espacio para que no se corten los números arriba
                 }
             },
             plugins: { 
@@ -290,7 +290,7 @@ function initChart(data) {
             scales: {
                 y: { 
                     min: 0, 
-                    suggestedMax: 12, // Ajusta según el promedio de tus salas
+                    suggestedMax: 10, // Ajusta según el promedio de tus salas
                     grid: { color: 'rgba(255,255,255,0.05)' },
                     ticks: { color: '#5a5580' }
                 },
