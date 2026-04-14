@@ -181,10 +181,11 @@ async function updateWeeklyChart(dateString) {
 
         if (!response.ok) throw new Error(`Error en servidor: ${response.status}`);
 
-        const dataRaw = await response.json();
+        const text = await response.text();
+        const dataRaw = text ? JSON.parse(text) : [];
         const results = Array.isArray(dataRaw) ? dataRaw : [];
 
-        // 1. Generar etiquetas cada 15 minutos: 6:00, 6:15, 6:30, 6:45...
+        // 1. Generar etiquetas cada 15 minutos: 6:00 a 22:00
         const labels = [];
         for (let h = 6; h <= 22; h++) {
             labels.push(`${h}:00`);
@@ -199,15 +200,25 @@ async function updateWeeklyChart(dateString) {
             const teacherData = labels.map(timeLabel => {
                 const [hLabel, mLabel] = timeLabel.split(':').map(Number);
                 
-                // 2. Buscamos el registro. 
-                // Reducimos el margen a 7 minutos para que sea preciso con los 15 min.
                 const record = results.find(item => {
                     if (!item.fecha_muestreo) return false;
-                    const itemTime = new Date(item.fecha_muestreo);
+
+                    // Validar que el registro pertenezca al día seleccionado en el dash
+                    // (item.fecha_muestreo suele ser YYYY-MM-DD...)
+                    if (!item.fecha_muestreo.startsWith(selectedDate)) return false;
+
+                    let itemTime = new Date(item.fecha_muestreo);
                     
-                    return normalizeName(item.nombre_completo_profesor) === teacherName &&
-                           itemTime.getHours() === hLabel &&
-                           Math.abs(itemTime.getMinutes() - mLabel) <= 7;
+                    // Si el string contiene 'Z', JS lo asume UTC. 
+                    // Sumamos 5 horas para normalizar a hora Colombia en el gráfico.
+                    if (item.fecha_muestreo.includes('Z')) {
+                        itemTime.setHours(itemTime.getHours() + 5);
+                    }
+                    
+                    // Usamos la nueva propiedad "profesor"
+                    return normalizeName(item.profesor) === teacherName &&
+                        itemTime.getHours() === hLabel &&
+                        Math.abs(itemTime.getMinutes() - mLabel) <= 7;
                 });
 
                 return record ? record.total_estudiantes : 0;
@@ -217,7 +228,7 @@ async function updateWeeklyChart(dateString) {
                 label: teacherName,
                 borderColor: teacherColors[teacherName] || '#fff',
                 borderWidth: 2,
-                pointRadius: 2, // Puntos un poco más pequeños para no saturar
+                pointRadius: 2,
                 fill: false,
                 tension: 0.3,
                 data: teacherData
@@ -275,7 +286,26 @@ function initChart(data) {
                 tooltip: { 
                     mode: 'index', 
                     intersect: false, 
-                    backgroundColor: '#1F2640' 
+                    backgroundColor: '#1F2640',
+                    titleFont: { family: 'Montserrat', size: 14, weight: 'bold' },
+                    bodyFont: { family: 'Montserrat', size: 12 },
+                    padding: 12,
+                    cornerRadius: 8,
+                    // --- ESTA ES LA MAGIA PARA LOS CÍRCULOS ---
+                    usePointStyle: true, // Cambia el cuadrado por el estilo del punto (círculo)
+                    boxWidth: 8,         // Tamaño del círculo
+                    boxHeight: 8,
+                    callbacks: {
+                        // Forzamos a que use el color de la línea como fondo del círculo
+                        labelColor: function(context) {
+                            return {
+                                borderColor: context.dataset.borderColor,
+                                backgroundColor: context.dataset.borderColor, // Círculo sólido
+                                borderWidth: 0,
+                                borderRadius: 5 // Redondeo máximo para que sea círculo
+                            };
+                        }
+                    }
                 },
                   datalabels: {
                     align: 'top',
@@ -344,8 +374,6 @@ async function initMeetings() {
     const list = document.getElementById('meetingsList');
     if (!list) return;
 
-    list.innerHTML = '<div style="opacity:.6">Cargando meetings...</div>';
-
     try {
         const response = await fetch(ZOOM_WEBHOOK, {
             method: 'POST',
@@ -400,7 +428,6 @@ async function initMeetings() {
 
     } catch (error) {
         console.error("❌ Error cargando meetings:", error);
-        list.innerHTML = '<div style="color:red">Error cargando meetings</div>';
     }
 }
 
