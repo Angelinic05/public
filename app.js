@@ -31,13 +31,13 @@ const teacherPhotos = {
 };
 
 const teacherColors = {
-    "CHRISTIAN VELILLA": "#e040fb",
-    "FELIPE MORENO": "#7b2fff",
-    "PAULA LONDOÑO": "#c060f0",
-    "FELIPE VALENCIA": "#00ffe5",
-    "CATÁLINA CÓRDOBA": "#f2ff00",
-    "DAVID QUIROGA": "#ff7300",
-    "ALEJANDRA RIVERA": "#ff0008",
+    "CHRISTIAN VELILLA": "#F59F16",
+    "FELIPE MORENO": "#F198B8",
+    "PAULA LONDOÑO": "#E0BBDA",
+    "FELIPE VALENCIA": "#96D1CF",
+    "CATÁLINA CÓRDOBA": "#FFD44A",
+    "DAVID QUIROGA": "#E73C71",
+    "ALEJANDRA RIVERA": "#b76fff",
 };
 
 const today = new Date();
