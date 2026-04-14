@@ -48,13 +48,13 @@ html, body {
    TOP SECTION
 ══════════════════════════════════════════ */
 .top-section {
-  flex: 3; /* Aumentamos de 2 a 4 para que gane mucho más terreno vertical */
+  flex: 3; 
   display: grid;
-  grid-template-columns: clamp(200px, 30%, 500px) 1fr;
   align-items: center;
   gap: 24px;
   min-height: 0;
 }
+
 .title-block {
   display: flex;
   flex-direction: column;
@@ -130,7 +130,7 @@ html, body {
    BOTTOM SECTION
 ══════════════════════════════════════════ */
 .bottom-section {
-  flex: 3;
+
   display: grid;
   grid-template-columns: 1fr clamp(300px, 30%, 450px);
   gap: 16px;

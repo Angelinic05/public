@@ -47,7 +47,7 @@
 .t-row {
   display: grid;
   /* Bajamos el mínimo de 180px a 140px para dar más aire a la barra */
-  grid-template-columns: clamp(140px, 18%, 250px) 1fr 80px; 
+  grid-template-columns: clamp(220px, 18%, 500px) 1fr 80px; 
   align-items: center;
   gap: 12px; /* Reducimos el gap de 20px a 12px */
   flex: 1;
@@ -67,8 +67,8 @@
 }
 
 .t-avatar {
-  width: clamp(20px, 6vw, 70px);
-  height: clamp(20px, 6vw, 70px);
+  width: clamp(20px, 6vw, 50px);
+  height: clamp(20px, 6vw, 50px);
   border-radius: 50%;
   object-fit: cover;
   flex-shrink: 0;

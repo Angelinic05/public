@@ -3,6 +3,8 @@
 ══════════════════════════════════════════ */
 const WEBHOOK_URL = 'https://n8n.srv1299698.hstgr.cloud/webhook/club';
 const ZOOM_WEBHOOK = 'https://n8n.srv1299698.hstgr.cloud/webhook/zooms';
+const WEBHOOK_CHART_URL = 'https://n8n.srv1299698.hstgr.cloud/webhook/asistencia_salas';
+
 let globalAttendanceData = []; 
 let myLineChart;
 const START_HOUR = 6; 
@@ -12,21 +14,30 @@ const MASTER_TEACHERS = [
     "CHRISTIAN VELILLA",
     "FELIPE MORENO",
     "PAULA LONDOÑO",
-    "FELIPE VALENCIA"
+    "FELIPE VALENCIA",
+    "CATÁLINA CÓRDOBA",
+    "DAVID QUIROGA",
+    "ALEJANDRA RIVERA"
 ];
 
 const teacherPhotos = {
     "CHRISTIAN VELILLA": "images/Chris.jpg",
     "FELIPE MORENO": "images/Moreno.jpg",
     "PAULA LONDOÑO": "images/Paula.jpg",
-    "FELIPE VALENCIA": "images/Valencia.jpg"
+    "FELIPE VALENCIA": "images/Valencia.jpg",
+    "CATÁLINA CÓRDOBA": "images/catalina.png",
+    "DAVID QUIROGA": "images/david.jpeg",
+    "ALEJANDRA RIVERA": "images/Alejandra.png"
 };
 
 const teacherColors = {
     "CHRISTIAN VELILLA": "#e040fb",
     "FELIPE MORENO": "#7b2fff",
     "PAULA LONDOÑO": "#c060f0",
-    "FELIPE VALENCIA": "#00ffe5"
+    "FELIPE VALENCIA": "#00ffe5",
+    "CATÁLINA CÓRDOBA": "#f2ff00",
+    "DAVID QUIROGA": "#ff7300",
+    "ALEJANDRA RIVERA": "#ff0008",
 };
 
 const today = new Date();
@@ -43,6 +54,9 @@ function normalizeName(name) {
     if (n.includes("FELIPE") && n.includes("MORENO")) return "FELIPE MORENO";
     if (n.includes("PAULA") && n.includes("LONDOÑO")) return "PAULA LONDOÑO";
     if (n.includes("FELIPE") && n.includes("VALENCIA")) return "FELIPE VALENCIA";
+    if (n.includes("CATÁLINA") && n.includes("CÓPRDOBA")) return "CATÁLINA CÓRDOBA";
+    if (n.includes("DAVID") && n.includes("QUIROGA")) return "DAVID QUIROGA";
+    if (n.includes("ALEJANDRA") && n.includes("RIVERA")) return "ALEJANDRA RIVERA";
     return n.replace(/\./g, "").trim(); 
 }
 
@@ -155,58 +169,71 @@ function renderRow(container, user, bars, duration) {
 /* ══════════════════════════════════════════
    GRAFICO LINEAL (CALCULO POR SEMANA)
 ══════════════════════════════════════════ */
-function updateWeeklyChart(dateString) {
-    const date = new Date(dateString + "T00:00:00");
-    const day = date.getDay();
-    const diff = date.getDate() - day + (day === 0 ? -6 : 1);
-    const monday = new Date(date.setDate(diff));
-    const sunday = new Date(monday);
-    sunday.setDate(monday.getDate() + 6);
+/* ══════════════════════════════════════════
+    GRAFICO LINEAL (ASISTENCIA DIARIA - 15 MIN)
+══════════════════════════════════════════ */
+async function updateWeeklyChart(dateString) {
+    try {
+        const response = await fetch(WEBHOOK_CHART_URL, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' }
+        });
 
-    // --- ACTUALIZAR TEXTO DEL BOTÓN ---
-    const weeklyText = document.getElementById('weeklyRangeText');
-    if (weeklyText) {
-        const options = { day: 'numeric' };
-        const monthOption = { month: 'long' };
-        const rangeText = `${monday.toLocaleDateString('es-ES', options)} - ${sunday.toLocaleDateString('es-ES', options)} ${sunday.toLocaleDateString('es-ES', monthOption)}`;
-        weeklyText.textContent = rangeText;
-    }
+        if (!response.ok) throw new Error(`Error en servidor: ${response.status}`);
 
-    const weekDates = [];
-    for (let i = 0; i < 7; i++) {
-        const d = new Date(monday);
-        d.setDate(monday.getDate() + i);
-        weekDates.push(d.toISOString().split('T')[0]);
-    }
+        const dataRaw = await response.json();
+        const results = Array.isArray(dataRaw) ? dataRaw : [];
 
-    const newData = {
-        labels: ['Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab', 'Dom'],
-        datasets: MASTER_TEACHERS.map(teacherName => {
-            const dataByDay = weekDates.map(currentDate => {
-                const dayLogs = globalAttendanceData.filter(log => 
-                    normalizeName(log.name) === teacherName && 
-                    log.join && log.join.startsWith(currentDate)
-                );
-                let totalMin = 0;
-                dayLogs.forEach(log => {
-                    if (log.join && log.leave) {
-                        const duration = (new Date(log.leave) - new Date(log.join)) / (1000 * 60);
-                        totalMin += duration;
-                    }
+        // 1. Generar etiquetas cada 15 minutos: 6:00, 6:15, 6:30, 6:45...
+        const labels = [];
+        for (let h = 6; h <= 22; h++) {
+            labels.push(`${h}:00`);
+            if (h < 22) {
+                labels.push(`${h}:15`);
+                labels.push(`${h}:30`);
+                labels.push(`${h}:45`);
+            }
+        }
+
+        const datasets = MASTER_TEACHERS.map(teacherName => {
+            const teacherData = labels.map(timeLabel => {
+                const [hLabel, mLabel] = timeLabel.split(':').map(Number);
+                
+                // 2. Buscamos el registro. 
+                // Reducimos el margen a 7 minutos para que sea preciso con los 15 min.
+                const record = results.find(item => {
+                    if (!item.fecha_muestreo) return false;
+                    const itemTime = new Date(item.fecha_muestreo);
+                    
+                    return normalizeName(item.nombre_completo_profesor) === teacherName &&
+                           itemTime.getHours() === hLabel &&
+                           Math.abs(itemTime.getMinutes() - mLabel) <= 7;
                 });
-                return parseFloat((totalMin / 60).toFixed(1)); 
+
+                return record ? record.total_estudiantes : 0;
             });
+
             return {
                 label: teacherName,
-                borderColor: teacherColors[teacherName],
-                borderWidth: 3,
-                fill: true,
-                tension: 0.4,
-                data: dataByDay
+                borderColor: teacherColors[teacherName] || '#fff',
+                borderWidth: 2,
+                pointRadius: 2, // Puntos un poco más pequeños para no saturar
+                fill: false,
+                tension: 0.3,
+                data: teacherData
             };
-        })
-    };
-    initChart(newData);
+        });
+
+        initChart({ labels, datasets });
+
+        const d = new Date(selectedDate + "T00:00:00");
+        const rangeText = document.getElementById('weeklyRangeText');
+        if(rangeText) rangeText.textContent = "Asistencia: " + d.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' });
+
+    } catch (error) {
+        console.error("❌ Error en gráfica:", error);
+        initChart({ labels: [], datasets: [] });
+    }
 }
 
 function initChart(data) {
@@ -251,38 +278,24 @@ function initChart(data) {
                     backgroundColor: '#1F2640' 
                 },
                   datalabels: {
-                      align: 'top',
-                      anchor: 'end',
-                      offset: 4,
-                      color: (context) => context.dataset.borderColor,
-                      font: {
-                          family: 'Montserrat',
-                          weight: 'bold',
-                          size: 10 
-                      },
-
-                      formatter: (value) => {
-                          if (!value || value <= 0) return ''; 
-
-                          const hours = Math.floor(value);
-                          const minutes = Math.round((value - hours) * 60);
-
-                          if (minutes === 0) return `${hours}H`;
-                          
-                          return `${hours}H ${minutes < 10 ? '0' + minutes : minutes}M`;
-                      }
-                  }
+                    align: 'top',
+                    anchor: 'end',
+                    color: (context) => context.dataset.borderColor,
+                    font: { weight: 'bold', size: 10 },
+                    formatter: (value) => {
+                        return value > 0 ? value : ''; // Solo muestra el número si es mayor a 0
+                    }
+                }
             },
             scales: {
                 y: { 
                     min: 0, 
-                    max: 14, 
-                    grid: { color: 'rgba(255,255,255,0.03)' }, 
-                    ticks: { color: '#5a5580' } 
+                    suggestedMax: 12, // Ajusta según el promedio de tus salas
+                    grid: { color: 'rgba(255,255,255,0.05)' },
+                    ticks: { color: '#5a5580' }
                 },
                 x: { 
-                    grid: { display: false }, 
-                    ticks: { color: '#ffffff' } 
+                    ticks: { color: '#ffffff', font: { size: 9 } } 
                 }
             }
         }
