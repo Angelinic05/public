@@ -152,8 +152,8 @@ html, body {
     }
 
     .top-section {
-      flex: 0.7; 
-      min-height: 250px; 
+      flex: 0.5; 
+      min-height: 230px; 
   }
 
     /* Reducimos el padding interno de los bloques para ganar espacio */
