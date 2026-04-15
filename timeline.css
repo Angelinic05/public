@@ -106,33 +106,25 @@
     cursor: pointer;
     transition: all 0.2s ease;
     border-radius: 0;
-    
-    /* Centrado para el texto que aparecerá */
     display: flex;
     align-items: center;
     justify-content: center;
+
+    /* GRADIENTE USANDO TUS COLORES PERSONALIZADOS */
+    background: linear-gradient(90deg, var(--color-start) 0%, var(--color-end) 100%);
+    
+    /* Mantiene el gradiente continuo a lo largo de toda la fila */
+    background-size: 100vw 100%; 
+    background-attachment: fixed;
+    
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
+/* Ajuste para que el texto del hover no se vea afectado por el gradiente fixed */
 .t-bar::after {
-    content: attr(data-time); /* Extrae el texto del atributo JS */
-    position: absolute;
-    top: -25px; /* Lo posiciona arriba de la barra */
-    left: 50%;
-    transform: translateX(-50%);
-    
-    background: rgba(34, 32, 74, 0.95);
-    color: #fff;
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-size: 10px;
-    font-weight: 700;
-    white-space: nowrap;
-    
-    opacity: 0; /* Oculto por defecto */
-    transition: all 0.2s ease;
-    pointer-events: none;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    background: #1F2640; /* Color sólido para el tooltip */
+    z-index: 10;
 }
 
 .t-bar:hover::after {
@@ -157,15 +149,17 @@
 /* Efecto hover ajustado para no romper los bordes */
 
 
-.bar-gradient {
-  /* 1. El degradado se aplica al tamaño total del contenedor padre (.t-track) */
+/* .bar-gradient {
   background: linear-gradient(90deg, var(--accent-bar) 20%, var(--accent-hot) 80%);
   background-attachment: fixed; 
   background-origin: padding-box;
   background-clip: border-box;
-  background-size: 100vw; /* El degradado se estira a lo ancho */
+  background-size: 100vw; 
   background-position: left center;
-}
+} */
+
+
+
 .bar-accent {
   background: var(--accent-hot);
   opacity: 0.85;
@@ -210,9 +204,15 @@
 
 /* --- Dentro de initTimeline --- */
 
-@media (max-width: 1640px) {
+@media (max-width: 1400px) {
   .axis-hours span {
     font-size: 9px; /* Texto un poco más pequeño */
+  }
+
+  .t-row {
+    display: grid;
+    /* Bajamos el mínimo de 180px a 140px para dar más aire a la barra */
+    grid-template-columns: clamp(170px, 19%, 250px) 1fr 80px; 
   }
 
   .axis-hours span:nth-child(even) {
@@ -220,12 +220,17 @@
   }
 
   .t-avatar {
-    width: clamp(40px, 6vw, 60px);
-    height: clamp(40px, 6vw, 60px);
+    width: clamp(35px, 3vw, 35px);
+    height: clamp(35px, 3vw, 35px);
+  }
+
+  .t-name {
+    font-size: clamp(0.68rem, 1vw, 0.9rem);
+    font-weight: 600;
   }
 }
 
-@media (max-width: 1024px) {
+/* @media (max-width: 1024px) {
 
   .axis-hours span {
     display: none;
@@ -233,7 +238,7 @@
   .axis-hours span:nth-child(3n+1) {
     display: flex;
   }
-}
+} */
 
 
 @media (max-width: 900px) {

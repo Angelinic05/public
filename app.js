@@ -30,15 +30,32 @@ const teacherPhotos = {
     "ALEJANDRA RIVERA": "images/Alejandra.png"
 };
 
+
+
 const teacherColors = {
-    "CHRISTIAN VELILLA": "#F59F16",
-    "FELIPE MORENO": "#F198B8",
-    "PAULA LONDOÑO": "#E0BBDA",
-    "FELIPE VALENCIA": "#96D1CF",
-    "CATÁLINA CÓRDOBA": "#FFD44A",
-    "DAVID QUIROGA": "#E73C71",
-    "ALEJANDRA RIVERA": "#b76fff",
+
+    "CHRISTIAN VELILLA": "#8138ff",
+    "FELIPE MORENO": "#f85621",
+    "PAULA LONDOÑO": "#ffb300",
+    "FELIPE VALENCIA": "#00ffbf",
+    "CATÁLINA CÓRDOBA": "#0F85AA",
+    "DAVID QUIROGA": "#ea83ea",
+    "ALEJANDRA RIVERA": "#e73559",
+
 };
+
+
+const teacherColorsLine = {
+    "CHRISTIAN VELILLA": { start: "#8138ff", end: "#FF327D" },
+    "FELIPE MORENO":     { start: "#f85621", end: "#FFA332" },
+    "PAULA LONDOÑO":     { start: "#ffb300", end: "#FFC379" },
+    "FELIPE VALENCIA":   { start: "#00ffbf", end: "#00BFFF" },
+    "CATÁLINA CÓRDOBA":  { start: "#0F85AA", end: "#0004FF" },
+    "DAVID QUIROGA":     { start: "#ea83ea", end: "#FF006A" },
+    "ALEJANDRA RIVERA":  { start: "#ec5876", end: "#AB1400" },
+};
+
+
 
 const today = new Date();
 const offset = today.getTimezoneOffset();
@@ -126,13 +143,17 @@ function initTimeline() {
             // Redondea derecha solo si termina a las 10:00 PM (22:00)
             if (endTotalMin >= 22 * 60) borderClasses += " is-last";
 
-            // --- ESTE ES EL RETURN QUE BUSCABAS ---
+            const colors = teacherColorsLine[teacherName] || { start: "#b76fff", end: "#4a237a" };
+
+            // Pasamos AMBOS colores como variables CSS
+            const gradientVars = `--color-start: ${colors.start}; --color-end: ${colors.end};`;
+
             bars.push({
                 left: Math.max(0, left),
                 width: Math.max(0.8, width),
-                type: 'bar-gradient' + borderClasses, 
+                type: borderClasses, 
+                customStyle: gradientVars, // Inyectamos las variables
                 tooltip: `${joinDate.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})} - ${log.leave ? leaveDate.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : 'Activo'}`,
-                // Texto que aparecerá al pasar el mouse (CSS data-time)
                 timeLabel: `${joinDate.getHours()}:${joinDate.getMinutes().toString().padStart(2, '0')} - ${log.leave ? leaveDate.getHours() + ':' + leaveDate.getMinutes().toString().padStart(2, '0') : 'Ahora'}`
             });
         });
@@ -146,6 +167,9 @@ function initTimeline() {
 function renderRow(container, user, bars, duration) {
     const row = document.createElement('div');
     row.className = 't-row';
+    // AÑADIMOS ESTO: Atributo para identificar al profesor en el hover
+    row.setAttribute('data-teacher', user.name); 
+    
     const avatarUrl = teacherPhotos[user.name] || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}`;
 
     row.innerHTML = `
@@ -156,16 +180,64 @@ function renderRow(container, user, bars, duration) {
         <div class="t-track">
             ${bars.map(bar => `
                 <div class="t-bar ${bar.type}" 
-                     style="left: ${bar.left}%; width: ${bar.width}%" 
+                     style="left: ${bar.left}%; width: ${bar.width}%; ${bar.customStyle}" 
                      data-time="${bar.timeLabel}" 
                      title="${bar.tooltip}">
                 </div>`).join('')}
         </div>
         <div class="t-duration">${duration}</div>
     `;
+    
+    // AÑADIMOS ESTOS EVENTOS:
+    row.addEventListener('mouseenter', () => highlightLine(user.name));
+    row.addEventListener('mouseleave', () => resetLines());
+    
     container.appendChild(row);
 }
 
+
+
+/* ══════════════════════════════════════════
+    LÓGICA DE RESALTADO DEL GRÁFICO
+   ══════════════════════════════════════════ */
+
+/* ══════════════════════════════════════════
+    LÓGICA DE RESALTADO DEL GRÁFICO (ACTUALIZADA)
+   ══════════════════════════════════════════ */
+
+function highlightLine(teacherName) {
+    if (!myLineChart) return;
+
+    myLineChart.data.datasets.forEach((dataset) => {
+        if (dataset.label === teacherName) {
+            dataset.showLabels = true; // MOSTRAR NÚMEROS
+            dataset.borderWidth = 5;
+            dataset.borderColor = teacherColors[teacherName];
+            dataset.backgroundColor = teacherColors[teacherName] + '44';
+        } else {
+            dataset.showLabels = false; // OCULTAR NÚMEROS
+            dataset.borderWidth = 1;
+            dataset.borderColor = 'rgba(255, 255, 255, 0.1)';
+            dataset.backgroundColor = 'transparent';
+        }
+    });
+
+    myLineChart.update('none'); 
+}
+
+function resetLines() {
+    if (!myLineChart) return;
+
+    myLineChart.data.datasets.forEach((dataset) => {
+        const teacherName = dataset.label;
+        dataset.showLabels = false; // OCULTAR TODOS AL SALIR
+        dataset.borderWidth = 2;
+        dataset.borderColor = teacherColors[teacherName] || '#fff';
+        dataset.backgroundColor = teacherColors[teacherName] + '44';
+    });
+
+    myLineChart.update('none');
+}
 /* ══════════════════════════════════════════
    GRAFICO LINEAL (CALCULO POR SEMANA)
 ══════════════════════════════════════════ */
@@ -212,7 +284,7 @@ async function updateWeeklyChart(dateString) {
                     // Si el string contiene 'Z', JS lo asume UTC. 
                     // Sumamos 5 horas para normalizar a hora Colombia en el gráfico.
                     if (item.fecha_muestreo.includes('Z')) {
-                        itemTime.setHours(itemTime.getHours() + 5);
+                        itemTime.setHours(itemTime.getHours() + 7);
                     }
                     
                     // Usamos la nueva propiedad "profesor"
@@ -239,7 +311,7 @@ async function updateWeeklyChart(dateString) {
 
         const d = new Date(selectedDate + "T00:00:00");
         const rangeText = document.getElementById('weeklyRangeText');
-        if(rangeText) rangeText.textContent = "Asistencia: " + d.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' });
+        if(rangeText) rangeText.textContent = "" + d.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' });
 
     } catch (error) {
         console.error("❌ Error en gráfica:", error);
@@ -307,25 +379,38 @@ function initChart(data) {
                         }
                     }
                 },
-                  datalabels: {
+                  // --- DENTRO DE initChart, en la sección datalabels ---
+                datalabels: {
+                    // Esta función decide si mostrar o no el número
+                    display: function(context) {
+                        // Buscamos una propiedad 'showLabels' que activaremos por código
+                        return context.dataset.showLabels === true; 
+                    },
                     align: 'top',
                     anchor: 'end',
+                    offset: -5,
                     color: (context) => context.dataset.borderColor,
                     font: { weight: 'bold', size: 10 },
                     formatter: (value) => {
-                        return value > 0 ? value : ''; // Solo muestra el número si es mayor a 0
+                        return value > 0 ? value : ''; 
                     }
                 }
             },
             scales: {
                 y: { 
                     min: 0, 
-                    suggestedMax: 10, // Ajusta según el promedio de tus salas
+                    suggestedMax: 12,
                     grid: { color: 'rgba(255,255,255,0.05)' },
                     ticks: { color: '#5a5580' }
                 },
                 x: { 
-                    ticks: { color: '#ffffff', font: { size: 9 } } 
+                    ticks: { 
+                        color: '#ffffff', 
+                        font: { size: 11 },
+                        maxRotation: 90,
+                        minRotation: 90 
+                    }
+                    
                 }
             }
         }
@@ -335,40 +420,8 @@ function initChart(data) {
 /* ══════════════════════════════════════════
    SELECTORES Y EVENTOS
 ══════════════════════════════════════════ */
-function setupDatePicker() {
-    const btn = document.getElementById('datePickerBtn');
-    const input = document.getElementById('hiddenDateInput');
-    const text = document.getElementById('currentDateText');
-    
-    if(!input || !btn) return;
 
-    // 1. Sincronizamos el valor inicial del input
-    input.value = selectedDate;
 
-    // 2. Sincronizamos el texto inicial del botón con "Hoy"
-    const d = new Date(selectedDate + "T00:00:00");
-    if(text) text.textContent = d.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' });
-
-    btn.addEventListener('click', () => input.showPicker());
-    input.addEventListener('change', (e) => {
-        selectedDate = e.target.value;
-        const d = new Date(selectedDate + "T00:00:00");
-        if(text) text.textContent = d.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' });
-        fetchDashboardData(); 
-    });
-}
-
-function setupWeeklyPicker() {
-    const btn = document.getElementById('weeklyPickerBtn');
-    const input = document.getElementById('hiddenWeeklyInput');
-    if(btn && input) {
-        btn.addEventListener('click', () => input.showPicker());
-        input.addEventListener('change', (e) => {
-            // Actualiza la gráfica y el texto del botón
-            updateWeeklyChart(e.target.value);
-        });
-    }
-}
 
 async function initMeetings() {
     const list = document.getElementById('meetingsList');
@@ -418,7 +471,7 @@ async function initMeetings() {
                     ${teacherName}
                 </div>
 
-                <div class="meeting-meta" style="margin-top:6px; font-size:12px; opacity:.7;">
+                <div class="meeting-meta contador">
                     ${m.contador_actual || 0} personas
                 </div>
             `;
@@ -453,9 +506,45 @@ function mapMeetingStatus(modo) {
     return { label: modo, badge: 'badge-idle' };
 }
 
+
+
+/* ══════════════════════════════════════════
+   SELECTORES Y EVENTOS UNIFICADOS
+══════════════════════════════════════════ */
+
+function setupUnifiedDatePicker() {
+    // Usamos el botón del gráfico (el de arriba) como único control
+    const btn = document.getElementById('weeklyPickerBtn');
+    const input = document.getElementById('hiddenWeeklyInput');
+    const text = document.getElementById('weeklyRangeText');
+    
+    if(!input || !btn) return;
+
+    // Sincronizar valor inicial
+    input.value = selectedDate;
+
+    // Función para actualizar TODO el dashboard
+    const updateAll = (newDate) => {
+        selectedDate = newDate;
+        
+        // 1. Actualizar texto visual del botón superior
+        const d = new Date(selectedDate + "T00:00:00");
+        if(text) text.textContent = "Asistencia: " + d.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' });
+
+        // 2. Disparar recarga de datos (esto actualiza el Timeline y luego el Gráfico)
+        fetchDashboardData(); 
+    };
+
+    btn.addEventListener('click', () => input.showPicker());
+    
+    input.addEventListener('change', (e) => {
+        updateAll(e.target.value);
+    });
+}
+
+// Al final de tu archivo, en el DOMContentLoaded, cambia las llamadas:
 document.addEventListener('DOMContentLoaded', () => {
-    setupDatePicker();
-    setupWeeklyPicker();
+    setupUnifiedDatePicker(); 
     initMeetings();
     fetchDashboardData();
     setInterval(initMeetings, 30000);

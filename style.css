@@ -4,8 +4,8 @@
    CSS VARIABLES
 ══════════════════════════════════════════ */
 :root {
-  --bg-deep:    #110626;
-  --bg-panel:   #251442;
+  --bg-deep:    #07060B;
+  --bg-panel:   #101123;
   --bg-card:    #22204a;
   --bg-card2:   #1e1c3a;
   --accent-hot: #7700ff;
@@ -48,11 +48,19 @@ html, body {
    TOP SECTION
 ══════════════════════════════════════════ */
 .top-section {
-  flex: 3; 
-  display: grid;
-  align-items: center;
-  gap: 24px;
-  min-height: 0;
+    flex: 1; 
+    display: grid;
+    align-items: center;
+    gap: 24px;
+    min-height: 300px; 
+}
+
+.bottom-section {
+    flex: 2; 
+    display: grid;
+    grid-template-columns: 1fr clamp(300px, 25%, 400px); /* Ajustamos el ancho de meetings */
+    gap: 16px;
+    min-height: 0;
 }
 
 .title-block {
@@ -89,7 +97,7 @@ html, body {
   position: relative;
   background: var(--bg-panel);
   border-radius: var(--radius);
-  padding: 50px 50px;
+  padding: 30px;
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -129,31 +137,30 @@ html, body {
 /* ══════════════════════════════════════════
    BOTTOM SECTION
 ══════════════════════════════════════════ */
-.bottom-section {
-
-  display: grid;
-  grid-template-columns: 1fr clamp(300px, 30%, 450px);
-  gap: 16px;
-  min-height: 0;
-}
-
 
 /* ══════════════════════════════════════════
    RESPONSIVE — LAPTOP  ≤ 1280px
 ══════════════════════════════════════════ */
-@media (max-width: 1280px) {
-  .dashboard {
-    padding: 18px 22px;
-    gap: 14px;
+@media (max-width: 1400px) {
+    .dashboard {
+        padding: 12px 16px; /* Menos espacio externo */
+        gap: 12px;
+    }
+
+    html, body {
+        font-size: 13px; 
+    }
+
+    .top-section {
+      flex: 0.7; 
+      min-height: 250px; 
   }
 
-  .top-section {
-    grid-template-columns: clamp(160px, 20%, 240px) 1fr;
-    gap: 16px;
-  }
-
+    /* Reducimos el padding interno de los bloques para ganar espacio */
+    .chart-block, .timeline-panel, .meetings-panel {
+        padding: 15px 20px;
+    }
 }
-
 /* ══════════════════════════════════════════
    RESPONSIVE — TABLET  ≤ 900px
    Scroll layout, sections stack vertically
