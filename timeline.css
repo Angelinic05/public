@@ -204,7 +204,7 @@
 
 /* --- Dentro de initTimeline --- */
 
-@media (max-width: 1400px) {
+@media (max-width: 1600px) {
   .axis-hours span {
     font-size: 9px; /* Texto un poco más pequeño */
   }
@@ -220,8 +220,8 @@
   }
 
   .t-avatar {
-    width: clamp(35px, 3vw, 35px);
-    height: clamp(35px, 3vw, 35px);
+    width: clamp(32px, 3vw, 32px);
+    height: clamp(32px, 3vw, 32px);
   }
 
   .t-name {
