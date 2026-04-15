@@ -355,6 +355,21 @@ function initChart(data) {
             },
             plugins: { 
                 legend: { display: false }, 
+                title: {
+                    display: true,
+                    text: 'ASISTENCIA',
+                    color: '#ffffff',
+                    align: 'center', // Lo alinea a la izquierda
+                    padding: {
+                        top: 0,
+                        bottom: 20
+                    },
+                    font: {
+                        family: 'Montserrat',
+                        size: 15,
+                        weight: '600'
+                    }
+                },
                 tooltip: { 
                     mode: 'index', 
                     intersect: false, 
