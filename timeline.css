@@ -257,25 +257,74 @@
 
 @media (max-width: 600px) {
   
-  /* Timeline row — 2-row layout on mobile */
+  /* 1. Ajuste de la fila: Definimos 2 columnas claras */
   .t-row {
     display: grid;
-    /* Fijamos el ancho del usuario en 220px (puedes ajustar este número, pero úsalo abajo también) */
-    grid-template-columns: 220px 1fr 85px; 
+    /* La primera columna para el usuario, la segunda para la duración (auto) */
+    grid-template-columns: 1fr auto; 
     align-items: center;
-    gap: 20px; 
-    flex: 1;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    gap: 8px;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   }
 
-  .t-user   { grid-column: 1; grid-row: 1; }
-  .t-duration { grid-column: 2; grid-row: 1; font-size: 0.8rem; }
-  .t-track  { grid-column: 1 / -1; grid-row: 2; height: 10px; }
+  /* El usuario a la izquierda */
+  .t-user { 
+    grid-column: 1; 
+    grid-row: 1; 
+  }
 
-  /* Only show every 3rd axis label */
-  .timeline-axis span            { display: none; }
-  .timeline-axis span:nth-child(3n+1) { display: inline; }
+  /* La duración pegada a la derecha */
+  .t-duration { 
+    grid-column: 2; 
+    grid-row: 1; 
+    text-align: right;
+    font-size: 0.85rem;
+    min-width: 70px; /* Asegura espacio para el texto */
+  }
 
-  .meetings-panel  { padding: 12px 14px; }
-  .meeting-card    { padding: 9px 11px; }
+  /* La barra ocupa todo el ancho abajo */
+  .t-track { 
+    grid-column: 1 / span 2; 
+    grid-row: 2; 
+    height: 18px; /* Un poco más gruesa para touch */
+    margin-top: 4px;
+  }
+
+  /* 2. Ajuste del Eje de horas: Quitamos las columnas sobrantes */
+  .timeline-axis {
+    display: block;
+    padding-top: 10px;
+    margin-top: 10px;
+  }
+
+  .axis-hours {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    /* Eliminamos padding excesivo para ganar espacio */
+    padding: 0; 
+  }
+
+  /* Reset de visibilidad para control total */
+  .axis-hours span {
+    display: none; 
+    font-size: 9px;
+    width: auto;
+    white-space: nowrap;
+  }
+
+  /* MOSTRAMOS 4 HITOS CLAVE PARA CUBRIR TODO EL RANGO: 6AM, 11AM, 4PM, 10PM */
+  /* Esto asegura que el usuario vea el inicio, el medio y el final real */
+  .axis-hours span:nth-child(1),  /* 6 AM */
+  .axis-hours span:nth-child(6),  /* 11 AM */
+  .axis-hours span:nth-child(11), /* 4 PM */
+  .axis-hours span:last-child {   /* 10 PM (Siempre visible) */
+    display: inline-block;
+  }
+
+  /* Ajuste de alineación para que el 10 PM no se corte */
+  .axis-hours span:last-child {
+    text-align: right;
+  }
 }
