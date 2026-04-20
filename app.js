@@ -15,7 +15,7 @@ const MASTER_TEACHERS = [
     "FELIPE MORENO",
     "PAULA LONDOÑO",
     "FELIPE VALENCIA",
-    "CATÁLINA CÓRDOBA",
+    "CATALINA CÓRDOBA",
     "DAVID QUIROGA",
     "ALEJANDRA RIVERA"
 ];
@@ -25,7 +25,7 @@ const teacherPhotos = {
     "FELIPE MORENO": "images/Moreno.jpg",
     "PAULA LONDOÑO": "images/Paula.jpg",
     "FELIPE VALENCIA": "images/Valencia.jpg",
-    "CATÁLINA CÓRDOBA": "images/catalina.png",
+    "CATALINA CÓRDOBA": "images/catalina.png",
     "DAVID QUIROGA": "images/david.jpeg",
     "ALEJANDRA RIVERA": "images/Alejandra.png"
 };
@@ -38,7 +38,7 @@ const teacherColors = {
     "FELIPE MORENO": "#f85621",
     "PAULA LONDOÑO": "#ffb300",
     "FELIPE VALENCIA": "#00ffbf",
-    "CATÁLINA CÓRDOBA": "#0F85AA",
+    "CATALINA CÓRDOBA": "#0F85AA",
     "DAVID QUIROGA": "#ea83ea",
     "ALEJANDRA RIVERA": "#e73559",
 
@@ -50,7 +50,7 @@ const teacherColorsLine = {
     "FELIPE MORENO":     { start: "#f85621", end: "#FFA332" },
     "PAULA LONDOÑO":     { start: "#ffb300", end: "#FFC379" },
     "FELIPE VALENCIA":   { start: "#00ffbf", end: "#00BFFF" },
-    "CATÁLINA CÓRDOBA":  { start: "#0F85AA", end: "#0004FF" },
+    "CATALINA CÓRDOBA":  { start: "#0F85AA", end: "#0004FF" },
     "DAVID QUIROGA":     { start: "#ea83ea", end: "#FF006A" },
     "ALEJANDRA RIVERA":  { start: "#ec5876", end: "#AB1400" },
 };
@@ -71,7 +71,7 @@ function normalizeName(name) {
     if (n.includes("FELIPE") && n.includes("MORENO")) return "FELIPE MORENO";
     if (n.includes("PAULA") && n.includes("LONDOÑO")) return "PAULA LONDOÑO";
     if (n.includes("FELIPE") && n.includes("VALENCIA")) return "FELIPE VALENCIA";
-    if (n.includes("CATÁLINA") && n.includes("CÓRDOBA")) return "CATÁLINA CÓRDOBA";
+    if (n.includes("CATALINA") && n.includes("CÓRDOBA")) return "CATALINA CÓRDOBA";
     if (n.includes("DAVID") && n.includes("QUIROGA")) return "DAVID QUIROGA";
     if (n.includes("ALEJANDRA") && n.includes("RIVERA")) return "ALEJANDRA RIVERA";
     return n.replace(/\./g, "").trim(); 
