@@ -71,7 +71,7 @@ function normalizeName(name) {
     if (n.includes("FELIPE") && n.includes("MORENO")) return "FELIPE MORENO";
     if (n.includes("PAULA") && n.includes("LONDOÑO")) return "PAULA LONDOÑO";
     if (n.includes("FELIPE") && n.includes("VALENCIA")) return "FELIPE VALENCIA";
-    if (n.includes("CATÁLINA") && n.includes("CÓPRDOBA")) return "CATÁLINA CÓRDOBA";
+    if (n.includes("CATÁLINA") && n.includes("CÓRDOBA")) return "CATÁLINA CÓRDOBA";
     if (n.includes("DAVID") && n.includes("QUIROGA")) return "DAVID QUIROGA";
     if (n.includes("ALEJANDRA") && n.includes("RIVERA")) return "ALEJANDRA RIVERA";
     return n.replace(/\./g, "").trim(); 
