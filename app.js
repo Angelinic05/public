@@ -207,34 +207,45 @@ function highlightLine(teacherName) {
     myLineChart.data.datasets.forEach((dataset) => {
         if (dataset.label === teacherName) {
             // ESTADO ACTIVO
-            dataset.showLabels = true; 
+            dataset.showLabels = true;
             dataset.borderWidth = 5;
-            dataset.pointRadius = 4;
-            dataset.pointHoverRadius = 6;
-            dataset.pointHitRadius = 5; // Activa detección para este profesor
             dataset.borderColor = teacherColors[teacherName];
             dataset.backgroundColor = teacherColors[teacherName] + '44';
+
+            // Puntos: visibles y con color (tamaño grande al seleccionar)
+            dataset.pointStyle = 'circle';
+            dataset.pointRadius = 4;
+            dataset.pointHoverRadius = 6;
+            dataset.pointHitRadius = 4;
+            dataset.pointBorderWidth = 2;
+            dataset.pointHoverBorderWidth = 2;
             dataset.pointBackgroundColor = teacherColors[teacherName];
             dataset.pointBorderColor = teacherColors[teacherName];
+            dataset.pointHoverBackgroundColor = teacherColors[teacherName];
+            dataset.pointHoverBorderColor = teacherColors[teacherName];
         } else {
-            // ESTADO TOTALMENTE OCULTO
+            // ESTADO OPACO — línea Y puntos desvanecidos
             dataset.showLabels = false;
             dataset.borderWidth = 1;
-            
-            // Forzar desaparición física
+            dataset.borderColor = 'rgba(255,255,255,0.05)';
+            dataset.backgroundColor = 'transparent';
+
+            // Puntos: forzar tamaño 0 Y color transparente (doble seguro)
+            dataset.pointStyle = 'circle';
             dataset.pointRadius = 0;
             dataset.pointHoverRadius = 0;
-            dataset.pointHitRadius = 0; // Desactiva la detección de colisión
-            
-            // Forzar desaparición visual (Colores)
-            dataset.borderColor = 'rgba(255, 255, 255, 0.05)'; 
-            dataset.backgroundColor = 'transparent';
-            dataset.pointBackgroundColor = 'rgba(0,0,0,0)'; // Totalmente transparente
-            dataset.pointBorderColor = 'rgba(0,0,0,0)';     // Totalmente transparente
+            dataset.pointHitRadius = 0;
+            dataset.pointBorderWidth = 0;
+            dataset.pointHoverBorderWidth = 0;
+            dataset.pointBackgroundColor = 'transparent';
+            dataset.pointBorderColor = 'transparent';
+            dataset.pointHoverBackgroundColor = 'transparent';
+            dataset.pointHoverBorderColor = 'transparent';
         }
     });
 
-    myLineChart.update('none'); 
+    // 'active' en lugar de 'none' para que Chart.js aplique TODOS los cambios de estilo
+    myLineChart.update('active');
 }
 
 function resetLines() {
@@ -244,21 +255,25 @@ function resetLines() {
         const teacherName = dataset.label;
         const color = teacherColors[teacherName] || '#fff';
 
-        dataset.showLabels = false; 
+        dataset.showLabels = false;
         dataset.borderWidth = 2;
-        
-        // Restaurar radios originales
-        dataset.pointRadius = 2;
-        dataset.pointHoverRadius = 4; 
-        dataset.pointHitRadius = 1;
-
         dataset.borderColor = color;
         dataset.backgroundColor = color + '44';
+
+        // Restaurar puntos completamente (tamaño 1)
+        dataset.pointStyle = 'circle';
+        dataset.pointRadius = 1;
+        dataset.pointHoverRadius = 3;
+        dataset.pointHitRadius = 1;
+        dataset.pointBorderWidth = 2;
+        dataset.pointHoverBorderWidth = 2;
         dataset.pointBackgroundColor = color;
         dataset.pointBorderColor = color;
+        dataset.pointHoverBackgroundColor = color;
+        dataset.pointHoverBorderColor = color;
     });
 
-    myLineChart.update('none');
+    myLineChart.update('active');
 }
 /* ══════════════════════════════════════════
    GRAFICO LINEAL (CALCULO POR SEMANA)
@@ -321,6 +336,8 @@ async function updateWeeklyChart(dateString) {
             return {
                 label: teacherName,
                 borderColor: teacherColors[teacherName] || '#fff',
+                pointBackgroundColor: teacherColors[teacherName] || '#fff',
+                pointBorderColor: teacherColors[teacherName] || '#fff',
                 borderWidth: 2,
                 pointRadius: 2,
                 fill: false,
@@ -397,13 +414,13 @@ function initChart(data) {
                     intersect: false, 
                     backgroundColor: '#1F2640',
                     titleFont: { family: 'Montserrat', size: 14, weight: 'bold' },
-                    bodyFont: { family: 'Montserrat', size: 12 },
+                    bodyFont: { family: 'Montserrat', size: 2 },
                     padding: 12,
-                    cornerRadius: 8,
+                    cornerRadius: 2,
                     // --- ESTA ES LA MAGIA PARA LOS CÍRCULOS ---
                     usePointStyle: true, // Cambia el cuadrado por el estilo del punto (círculo)
-                    boxWidth: 8,         // Tamaño del círculo
-                    boxHeight: 8,
+                    boxWidth: 2,         // Tamaño del círculo
+                    boxHeight: 2,
                     callbacks: {
                         // Forzamos a que use el color de la línea como fondo del círculo
                         labelColor: function(context) {
@@ -411,7 +428,7 @@ function initChart(data) {
                                 borderColor: context.dataset.borderColor,
                                 backgroundColor: context.dataset.borderColor, // Círculo sólido
                                 borderWidth: 0,
-                                borderRadius: 5 // Redondeo máximo para que sea círculo
+                                borderRadius: 2 // Redondeo máximo para que sea círculo
                             };
                         }
                     }
