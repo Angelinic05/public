@@ -6,6 +6,7 @@
   background: var(--bg-panel);
   border-radius: var(--radius);
   padding: 16px 24px; /* Bajamos de 50px a 24px para aprovechar mejor el ancho */
+  backdrop-filter: blur(10px); /* Efecto de filtro borroso para el fondo */
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -105,7 +106,7 @@
     z-index: 1;
     cursor: pointer;
     transition: all 0.2s ease;
-    border-radius: 0;
+    /* Eliminamos el border-radius general para que las clases is-first/is-last lo controlen */
     display: flex;
     align-items: center;
     justify-content: center;

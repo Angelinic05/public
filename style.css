@@ -4,8 +4,8 @@
    CSS VARIABLES
 ══════════════════════════════════════════ */
 :root {
-  --bg-deep:    #07060B;
-  --bg-panel:   #101123;
+  --bg-deep:    #07060B; 
+  --bg-panel:   #00000023; 
   --bg-card:    #22204a;
   --bg-card2:   #1e1c3a;
   --accent-hot: #7700ff;
@@ -23,14 +23,36 @@
 ══════════════════════════════════════════ */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-html, body {
+html {
+  background-color: #1a0933; /* Base morada muy profunda (reemplaza al negro) */
+}
+
+body {
   width: 100%;
   height: 100%;
-  background: var(--bg-deep);
   font-family: 'Montserrat', sans-serif;
   color: var(--text-main);
   font-size: 14px;
   overflow: hidden;
+  background-color: transparent !important; /* Importante: permite ver el ::before */
+}
+
+/* Pseudo-elemento para el fondo radial borroso */
+body::before {
+  content: '';
+  position: fixed; /* Para que se mantenga fijo al fondo */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    radial-gradient(circle at 10% 10%, #20133430 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, #ff327d22 0%, transparent 50%),
+    radial-gradient(circle at 50% 50%, #0f00266a 0%, transparent 60%), 
+    radial-gradient(circle at 20% 80%, #ff327d1a 0%, transparent 50%), 
+    radial-gradient(circle at 85% 85%, #0900171a 0%, transparent 40%);
+  filter: blur(60px); /* Reducido un poco para que no se vea tan lavado/blanco */
+  z-index: -1; /* Lo enviamos al fondo, detrás de todo el contenido */
 }
 
 /* ══════════════════════════════════════════
@@ -73,6 +95,7 @@ html, body {
   padding: 30px;
   border-radius: var(--radius);
   gap: 15px; /* Reduje un poco el gap para dar más aire */
+  backdrop-filter: blur(10px); /* Efecto de filtro borroso para el fondo */
   overflow: hidden; /* EVITA que la imagen se salga del borde redondeado */
 }
 
@@ -97,7 +120,8 @@ html, body {
   position: relative;
   background: var(--bg-panel);
   border-radius: var(--radius);
-  padding: 30px;
+  padding: 10px 20px 30px 20px;
+  backdrop-filter: blur(10px); /* Efecto de filtro borroso para el fondo */
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -105,12 +129,11 @@ html, body {
 
 .date-picker-top {
   position: absolute;
-  top: 12px;
-  right: 14px;
+  top: 20px;
+  right: 40px;
   display: flex;
   align-items: center;
   gap: 6px;
-  background: var(--pill-bg);
   border: 1px solid var(--pill-border);
   border-radius: 20px;
   padding: 4px 12px;

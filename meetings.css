@@ -6,6 +6,7 @@
   background: var(--bg-panel);
   border-radius: var(--radius);
   padding: 30px 40px;
+  backdrop-filter: blur(10px); /* Efecto de filtro borroso para el fondo */
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -31,7 +32,7 @@
 
 .meeting-card {
   border-radius: var(--radius-sm);
-  border: 2px solid #313252;
+  background: #00000025;
   padding: 11px 13px;
   display: flex;
   flex-direction: column;

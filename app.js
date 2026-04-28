@@ -30,24 +30,22 @@ const teacherPhotos = {
 
 
 const teacherColors = {
-
-    "CHRISTIAN VELILLA": "#8138ff",
-    "FELIPE MORENO": "#f85621",
-    "PAULA LONDOÑO": "#ffb300",
-    "FELIPE VALENCIA": "#00ffbf",
-    "DAVID QUIROGA": "#ea83ea",
-    "ALEJANDRA RIVERA": "#e73559",
-
+    "CHRISTIAN VELILLA": "#684EEC",
+    "FELIPE MORENO":     "#FCF1C3",
+    "PAULA LONDOÑO":     "#02F0E1",
+    "FELIPE VALENCIA":   "#ff91ff",
+    "DAVID QUIROGA":     "#5FADFF",
+    "ALEJANDRA RIVERA":  "#A240EF"
 };
 
 
 const teacherColorsLine = {
-    "CHRISTIAN VELILLA": { start: "#8138ff", end: "#FF327D" },
-    "FELIPE MORENO":     { start: "#f85621", end: "#FFA332" },
-    "PAULA LONDOÑO":     { start: "#ffb300", end: "#FFC379" },
-    "FELIPE VALENCIA":   { start: "#00ffbf", end: "#00BFFF" },
-    "DAVID QUIROGA":     { start: "#ea83ea", end: "#FF006A" },
-    "ALEJANDRA RIVERA":  { start: "#ec5876", end: "#AB1400" },
+    "CHRISTIAN VELILLA": { start: "#684EEC", end: "#684EEC" },
+    "FELIPE MORENO":     { start: "#FCF1C3", end: "#FCF1C3" },
+    "PAULA LONDOÑO":     { start: "#02F0E1", end: "#02F0E1" },
+    "FELIPE VALENCIA":   { start: "#ff91ff", end: "#ff91ff" },
+    "DAVID QUIROGA":     { start: "#5FADFF", end: "#5FADFF" },
+    "ALEJANDRA RIVERA":  { start: "#A240EF", end: "#A240EF" }
 };
 
 
@@ -130,12 +128,13 @@ function initTimeline() {
 
             if (log.leave) totalMinutes += durationMin;
 
-            // --- LÓGICA DE BORDES DINÁMICOS ---
+            // Todas las barras ahora son redondeadas por defecto para 
+            // respetar la estética de la base (t-track)
             let borderClasses = "";
-            // Redondea izquierda solo si empieza a las 6:00 AM
-            if (startTotalMin <= (START_HOUR * 60)) borderClasses += " is-first";
-            // Redondea derecha solo si termina a las 10:00 PM (22:00)
-            if (endTotalMin >= 22 * 60) borderClasses += " is-last";
+            // Redondea el lado izquierdo si es el primer segmento del profesor
+            if (index === 0) borderClasses += " is-first";
+            // Redondea el lado derecho si es el último segmento del profesor
+            if (index === teacherLogs.length - 1) borderClasses += " is-last";
 
             const colors = teacherColorsLine[teacherName] || { start: "#b76fff", end: "#4a237a" };
 
@@ -204,18 +203,30 @@ function renderRow(container, user, bars, duration) {
 function highlightLine(teacherName) {
     if (!myLineChart) return;
 
+    const color = teacherColors[teacherName] || '#fff';
+
     myLineChart.data.datasets.forEach((dataset) => {
         if (dataset.label === teacherName) {
             // ESTADO ACTIVO
             dataset.showLabels = true;
             dataset.borderWidth = 5;
-            dataset.borderColor = teacherColors[teacherName];
-            dataset.backgroundColor = teacherColors[teacherName] + '44';
+            dataset.borderColor = color;
+            // Degradado dinámico para la línea resaltada
+            dataset.backgroundColor = (context) => {
+                const chart = context.chart;
+                const {ctx, chartArea} = chart;
+                if (!chartArea) return null;
+                const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+                gradient.addColorStop(0, color + '80'); // 0.5 de opacidad arriba
+                gradient.addColorStop(0.5, color + '1A'); // Casi transparente a la mitad
+                gradient.addColorStop(1, 'transparent');  // Totalmente transparente en el eje X
+                return gradient;
+            };
 
             // Puntos: visibles y con color (tamaño grande al seleccionar)
             dataset.pointStyle = 'circle';
-            dataset.pointRadius = 4;
-            dataset.pointHoverRadius = 6;
+            dataset.pointRadius = 2.5;
+            dataset.pointHoverRadius = 4;
             dataset.pointHitRadius = 4;
             dataset.pointBorderWidth = 2;
             dataset.pointHoverBorderWidth = 2;
@@ -224,13 +235,19 @@ function highlightLine(teacherName) {
             dataset.pointHoverBackgroundColor = teacherColors[teacherName];
             dataset.pointHoverBorderColor = teacherColors[teacherName];
         } else {
-            // ESTADO OPACO — línea Y puntos desvanecidos
+            const datasetColor = teacherColors[dataset.label] || '#fff';
             dataset.showLabels = false;
-            dataset.borderWidth = 1;
-            dataset.borderColor = 'rgba(255,255,255,0.05)';
-            dataset.backgroundColor = 'transparent';
-
-            // Puntos: forzar tamaño 0 Y color transparente (doble seguro)
+            dataset.borderWidth = 2;
+            dataset.borderColor = 'rgba(255, 255, 255, 0.13)'; // Modifica este color para las líneas opacas
+            dataset.backgroundColor = (context) => {
+                const chart = context.chart;
+                const {ctx, chartArea} = chart;
+                if (!chartArea) return null;
+                const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+                gradient.addColorStop(0, 'rgba(255, 255, 255, 0.14)'); // Modifica el relleno opaco
+                gradient.addColorStop(1, 'transparent');
+                return gradient;
+            };
             dataset.pointStyle = 'circle';
             dataset.pointRadius = 0;
             dataset.pointHoverRadius = 0;
@@ -258,19 +275,28 @@ function resetLines() {
         dataset.showLabels = false;
         dataset.borderWidth = 2;
         dataset.borderColor = color;
-        dataset.backgroundColor = color + '44';
+        dataset.backgroundColor = (context) => {
+            const chart = context.chart;
+            const {ctx, chartArea} = chart;
+            if (!chartArea) return null;
+            const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+            gradient.addColorStop(0, color + '4D'); // 0.3 de opacidad arriba
+            gradient.addColorStop(0.6, color + '0D'); // Desvanece rápido
+            gradient.addColorStop(1, 'transparent');  // Transparente en el eje X
+            return gradient;
+        };
 
-        // Restaurar puntos completamente (tamaño 1)
+        // Restaurar puntos: sin puntos (solo líneas)
         dataset.pointStyle = 'circle';
-        dataset.pointRadius = 1;
-        dataset.pointHoverRadius = 3;
-        dataset.pointHitRadius = 1;
-        dataset.pointBorderWidth = 2;
-        dataset.pointHoverBorderWidth = 2;
-        dataset.pointBackgroundColor = color;
-        dataset.pointBorderColor = color;
-        dataset.pointHoverBackgroundColor = color;
-        dataset.pointHoverBorderColor = color;
+        dataset.pointRadius = 0;
+        dataset.pointHoverRadius = 0;
+        dataset.pointHitRadius = 0;
+        dataset.pointBorderWidth = 0;
+        dataset.pointHoverBorderWidth = 0;
+        dataset.pointBackgroundColor = 'transparent';
+        dataset.pointBorderColor = 'transparent';
+        dataset.pointHoverBackgroundColor = 'transparent';
+        dataset.pointHoverBorderColor = 'transparent';
     });
 
     myLineChart.update('active');
@@ -333,14 +359,16 @@ async function updateWeeklyChart(dateString) {
                 return record ? record.total_estudiantes : 0;
             });
 
+            const colorHex = teacherColors[teacherName] || '#fff';
             return {
                 label: teacherName,
-                borderColor: teacherColors[teacherName] || '#fff',
-                pointBackgroundColor: teacherColors[teacherName] || '#fff',
-                pointBorderColor: teacherColors[teacherName] || '#fff',
+                borderColor: colorHex,
+                backgroundColor: colorHex + '1A',
+                pointBackgroundColor: colorHex,
+                pointBorderColor: colorHex,
                 borderWidth: 2,
-                pointRadius: 2,
-                fill: false,
+                pointRadius: 0,
+                fill: 'origin',
                 tension: 0.3,
                 data: teacherData
             };
@@ -363,14 +391,20 @@ function initChart(data) {
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
 
-    const createGradient = (color) => {
-        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-        gradient.addColorStop(0, color + '44'); 
-        gradient.addColorStop(1, 'rgba(31, 38, 64, 0)');
-        return gradient;
-    };
-
-    data.datasets.forEach(ds => { ds.backgroundColor = createGradient(ds.borderColor); });
+    // Aplicar degradado inicial a cada dataset
+    data.datasets.forEach(ds => {
+        const color = ds.borderColor;
+        ds.backgroundColor = (context) => {
+            const chart = context.chart;
+            const {ctx, chartArea} = chart;
+            if (!chartArea) return null;
+            const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+            gradient.addColorStop(0, color + '4D'); 
+            gradient.addColorStop(0.6, color + '0D');
+            gradient.addColorStop(1, 'transparent');
+            return gradient;
+        };
+    });
 
     if (myLineChart) {
         myLineChart.data = data;
@@ -412,16 +446,30 @@ function initChart(data) {
                 tooltip: { 
                     mode: 'index', 
                     intersect: false, 
-                    backgroundColor: '#1F2640',
-                    titleFont: { family: 'Montserrat', size: 14, weight: 'bold' },
-                    bodyFont: { family: 'Montserrat', size: 2 },
-                    padding: 12,
-                    cornerRadius: 2,
+                    backgroundColor: 'rgba(26, 9, 51, 0.95)', // Morado profundo para el fondo
+                    borderColor: 'rgba(255, 255, 255, 0.2)',
+                    borderWidth: 1,
+                    titleFont: { family: 'Montserrat', size: 12, weight: 'bold' },
+                    bodyFont: { family: 'Montserrat', size: 12 },
+                    padding: 5,
+                    cornerRadius: 10,
+                    bodySpacing: 10,
+                    titleSpacing: 10,
                     // --- ESTA ES LA MAGIA PARA LOS CÍRCULOS ---
                     usePointStyle: true, // Cambia el cuadrado por el estilo del punto (círculo)
-                    boxWidth: 2,         // Tamaño del círculo
-                    boxHeight: 2,
+                    boxWidth: 10,        // Círculos de color más grandes
+                    boxHeight: 10,
                     callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            if (context.parsed.y !== null) {
+                                label += context.parsed.y;
+                            }
+                            return label;
+                        },
                         // Forzamos a que use el color de la línea como fondo del círculo
                         labelColor: function(context) {
                             return {
@@ -444,7 +492,7 @@ function initChart(data) {
                     anchor: 'end',
                     offset: -5,
                     color: (context) => context.dataset.borderColor,
-                    font: { weight: 'bold', size: 10 },
+                    font: { size: 15 },
                     formatter: (value) => {
                         return value > 0 ? value : ''; 
                     }
@@ -455,9 +503,10 @@ function initChart(data) {
                     min: 0, 
                     suggestedMax: 12,
                     grid: { color: 'rgba(255,255,255,0.05)' },
-                    ticks: { color: '#5a5580' }
+                    ticks: { color: '#f5f5f5' }
                 },
                 x: { 
+                    grid: { color: 'rgba(255,255,255,0.05)' },
                     ticks: { 
                         color: '#ffffff', 
                         font: { size: 11 },
@@ -601,5 +650,5 @@ document.addEventListener('DOMContentLoaded', () => {
     setupUnifiedDatePicker(); 
     initMeetings();
     fetchDashboardData();
-    setInterval(initMeetings, 30000);
+    //setInterval(initMeetings, 30000);
 });
