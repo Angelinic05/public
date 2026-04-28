@@ -650,5 +650,5 @@ document.addEventListener('DOMContentLoaded', () => {
     setupUnifiedDatePicker(); 
     initMeetings();
     fetchDashboardData();
-    //setInterval(initMeetings, 30000);
+    setInterval(initMeetings, 30000);
 });
