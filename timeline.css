@@ -67,8 +67,8 @@
 }
 
 .t-avatar {
-  width: clamp(20px, 6vw, 50px);
-  height: clamp(20px, 6vw, 50px);
+  width: clamp(30px, 6vw, 80px);
+  height: clamp(30px, 6vw, 80px);
   border-radius: 50%;
   object-fit: cover;
   flex-shrink: 0;
@@ -220,8 +220,8 @@
   }
 
   .t-avatar {
-    width: clamp(32px, 3vw, 32px);
-    height: clamp(32px, 3vw, 32px);
+    width: clamp(37px, 3vw, 40px);
+    height: clamp(37px, 3vw, 40px);
   }
 
   .t-name {

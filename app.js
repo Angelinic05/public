@@ -15,7 +15,6 @@ const MASTER_TEACHERS = [
     "FELIPE MORENO",
     "PAULA LONDOÑO",
     "FELIPE VALENCIA",
-    "CATALINA CÓRDOBA",
     "DAVID QUIROGA",
     "ALEJANDRA RIVERA"
 ];
@@ -25,11 +24,9 @@ const teacherPhotos = {
     "FELIPE MORENO": "images/Moreno.jpg",
     "PAULA LONDOÑO": "images/Paula.jpg",
     "FELIPE VALENCIA": "images/Valencia.jpg",
-    "CATALINA CÓRDOBA": "images/catalina.png",
     "DAVID QUIROGA": "images/david.jpeg",
     "ALEJANDRA RIVERA": "images/Alejandra.png"
 };
-
 
 
 const teacherColors = {
@@ -38,7 +35,6 @@ const teacherColors = {
     "FELIPE MORENO": "#f85621",
     "PAULA LONDOÑO": "#ffb300",
     "FELIPE VALENCIA": "#00ffbf",
-    "CATALINA CÓRDOBA": "#0F85AA",
     "DAVID QUIROGA": "#ea83ea",
     "ALEJANDRA RIVERA": "#e73559",
 
@@ -50,7 +46,6 @@ const teacherColorsLine = {
     "FELIPE MORENO":     { start: "#f85621", end: "#FFA332" },
     "PAULA LONDOÑO":     { start: "#ffb300", end: "#FFC379" },
     "FELIPE VALENCIA":   { start: "#00ffbf", end: "#00BFFF" },
-    "CATALINA CÓRDOBA":  { start: "#0F85AA", end: "#0004FF" },
     "DAVID QUIROGA":     { start: "#ea83ea", end: "#FF006A" },
     "ALEJANDRA RIVERA":  { start: "#ec5876", end: "#AB1400" },
 };
@@ -71,7 +66,6 @@ function normalizeName(name) {
     if (n.includes("FELIPE") && n.includes("MORENO")) return "FELIPE MORENO";
     if (n.includes("PAULA") && n.includes("LONDOÑO")) return "PAULA LONDOÑO";
     if (n.includes("FELIPE") && n.includes("VALENCIA")) return "FELIPE VALENCIA";
-    if (n.includes("CATALINA") && n.includes("CÓRDOBA")) return "CATALINA CÓRDOBA";
     if (n.includes("DAVID") && n.includes("QUIROGA")) return "DAVID QUIROGA";
     if (n.includes("ALEJANDRA") && n.includes("RIVERA")) return "ALEJANDRA RIVERA";
     return n.replace(/\./g, "").trim(); 
@@ -204,21 +198,39 @@ function renderRow(container, user, bars, duration) {
 /* ══════════════════════════════════════════
     LÓGICA DE RESALTADO DEL GRÁFICO (ACTUALIZADA)
    ══════════════════════════════════════════ */
-
+/* ══════════════════════════════════════════
+    LÓGICA DE RESALTADO DEL GRÁFICO (ACTUALIZADA)
+   ══════════════════════════════════════════ */
 function highlightLine(teacherName) {
     if (!myLineChart) return;
 
     myLineChart.data.datasets.forEach((dataset) => {
         if (dataset.label === teacherName) {
-            dataset.showLabels = true; // MOSTRAR NÚMEROS
+            // ESTADO ACTIVO
+            dataset.showLabels = true; 
             dataset.borderWidth = 5;
+            dataset.pointRadius = 4;
+            dataset.pointHoverRadius = 6;
+            dataset.pointHitRadius = 5; // Activa detección para este profesor
             dataset.borderColor = teacherColors[teacherName];
             dataset.backgroundColor = teacherColors[teacherName] + '44';
+            dataset.pointBackgroundColor = teacherColors[teacherName];
+            dataset.pointBorderColor = teacherColors[teacherName];
         } else {
-            dataset.showLabels = false; // OCULTAR NÚMEROS
+            // ESTADO TOTALMENTE OCULTO
+            dataset.showLabels = false;
             dataset.borderWidth = 1;
-            dataset.borderColor = 'rgba(255, 255, 255, 0.1)';
+            
+            // Forzar desaparición física
+            dataset.pointRadius = 0;
+            dataset.pointHoverRadius = 0;
+            dataset.pointHitRadius = 0; // Desactiva la detección de colisión
+            
+            // Forzar desaparición visual (Colores)
+            dataset.borderColor = 'rgba(255, 255, 255, 0.05)'; 
             dataset.backgroundColor = 'transparent';
+            dataset.pointBackgroundColor = 'rgba(0,0,0,0)'; // Totalmente transparente
+            dataset.pointBorderColor = 'rgba(0,0,0,0)';     // Totalmente transparente
         }
     });
 
@@ -230,10 +242,20 @@ function resetLines() {
 
     myLineChart.data.datasets.forEach((dataset) => {
         const teacherName = dataset.label;
-        dataset.showLabels = false; // OCULTAR TODOS AL SALIR
+        const color = teacherColors[teacherName] || '#fff';
+
+        dataset.showLabels = false; 
         dataset.borderWidth = 2;
-        dataset.borderColor = teacherColors[teacherName] || '#fff';
-        dataset.backgroundColor = teacherColors[teacherName] + '44';
+        
+        // Restaurar radios originales
+        dataset.pointRadius = 2;
+        dataset.pointHoverRadius = 4; 
+        dataset.pointHitRadius = 1;
+
+        dataset.borderColor = color;
+        dataset.backgroundColor = color + '44';
+        dataset.pointBackgroundColor = color;
+        dataset.pointBorderColor = color;
     });
 
     myLineChart.update('none');
