@@ -4,6 +4,10 @@
 const WEBHOOK_URL = 'https://n8n.srv1299698.hstgr.cloud/webhook/club';
 const ZOOM_WEBHOOK = 'https://n8n.srv1299698.hstgr.cloud/webhook/zooms';
 const WEBHOOK_CHART_URL = 'https://n8n.srv1299698.hstgr.cloud/webhook/asistencia_salas';
+const WEBHOOK_REUNIONES = 'https://n8n.srv1299698.hstgr.cloud/webhook/reunion';
+let globalMeetingsData = [];
+
+const MEETING_COLOR = "#e5e5e5"; // beige
 
 let globalAttendanceData = []; 
 let myLineChart;
@@ -74,18 +78,28 @@ function normalizeName(name) {
 ══════════════════════════════════════════ */
 async function fetchDashboardData() {
     try {
-        const response = await fetch(WEBHOOK_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ fecha_consulta: selectedDate })
-        });
-        const data = await response.json();
-        globalAttendanceData = Array.isArray(data) ? data : (data.logs || []);
-        
+        const [attendanceRes, meetingsRes] = await Promise.all([
+            fetch(WEBHOOK_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ fecha_consulta: selectedDate })
+            }),
+            fetch(WEBHOOK_REUNIONES, {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' }
+            })
+        ]);
+
+        const attendanceData = await attendanceRes.json();
+        const meetingsData = await meetingsRes.json();
+
+        globalAttendanceData = Array.isArray(attendanceData) ? attendanceData : (attendanceData.logs || []);
+        globalMeetingsData = Array.isArray(meetingsData) ? meetingsData : [];
+
         console.log("📊 Datos actualizados de la DB");
-        initTimeline(); 
-        updateWeeklyChart(selectedDate); 
-        
+        initTimeline();
+        updateWeeklyChart(selectedDate);
+
     } catch (error) {
         console.error("❌ Error cargando n8n:", error);
     }
@@ -102,52 +116,79 @@ function initTimeline() {
     // 1. Filtramos los datos por la fecha seleccionada
     const filteredLogs = globalAttendanceData.filter(log => log.join && log.join.startsWith(selectedDate));
 
-    MASTER_TEACHERS.forEach(teacherName => {
+        MASTER_TEACHERS.forEach(teacherName => {
         const teacherLogs = filteredLogs.filter(log => normalizeName(log.name) === teacherName);
-        
-        // IMPORTANTE: Ordenar para que la lógica de "is-first" e "is-last" sea correcta
         teacherLogs.sort((a, b) => new Date(a.join) - new Date(b.join));
+
+        // NUEVO: filtrar reuniones del profesor para selectedDate (hora local)
+        const teacherMeetings = globalMeetingsData.filter(m => {
+            if (normalizeName(m.profesor_nombre) !== teacherName) return false;
+            // Comparar por la fecha UTC literal (es lo que el usuario escribió)
+            const fechaLiteral = m.inicio.substring(0, 10); // "2026-05-14"
+            return fechaLiteral === selectedDate;
+        });
 
         let totalMinutes = 0;
         let bars = [];
 
+        // === Barras de asistencia (como antes) ===
         teacherLogs.forEach((log, index) => {
             const joinDate = new Date(log.join);
             const leaveDate = log.leave ? new Date(log.leave) : new Date();
-            
-            // Minutos totales desde las 00:00 para comparar con 6AM (360min) y 10PM (1320min)
-            const startTotalMin = (joinDate.getHours() * 60 + joinDate.getMinutes());
-            const endTotalMin = (leaveDate.getHours() * 60 + leaveDate.getMinutes());
 
-            // Posicionamiento relativo al START_HOUR (6 AM)
+            const startTotalMin = (joinDate.getHours() * 60 + joinDate.getMinutes());
             const startMinutesRelative = startTotalMin - (START_HOUR * 60);
             const left = (startMinutesRelative / (TOTAL_HOURS * 60)) * 100;
-            
+
             const durationMin = (leaveDate - joinDate) / (1000 * 60);
             const width = (durationMin / (TOTAL_HOURS * 60)) * 100;
 
             if (log.leave) totalMinutes += durationMin;
 
-            // Todas las barras ahora son redondeadas por defecto para 
-            // respetar la estética de la base (t-track)
             let borderClasses = "";
-            // Redondea el lado izquierdo si es el primer segmento del profesor
             if (index === 0) borderClasses += " is-first";
-            // Redondea el lado derecho si es el último segmento del profesor
             if (index === teacherLogs.length - 1) borderClasses += " is-last";
 
             const colors = teacherColorsLine[teacherName] || { start: "#b76fff", end: "#4a237a" };
-
-            // Pasamos AMBOS colores como variables CSS
             const gradientVars = `--color-start: ${colors.start}; --color-end: ${colors.end};`;
 
             bars.push({
                 left: Math.max(0, left),
                 width: Math.max(0.8, width),
-                type: borderClasses, 
-                customStyle: gradientVars, // Inyectamos las variables
+                type: borderClasses,
+                customStyle: gradientVars,
                 tooltip: `${joinDate.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})} - ${log.leave ? leaveDate.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : 'Activo'}`,
                 timeLabel: `${joinDate.getHours()}:${joinDate.getMinutes().toString().padStart(2, '0')} - ${log.leave ? leaveDate.getHours() + ':' + leaveDate.getMinutes().toString().padStart(2, '0') : 'Ahora'}`
+            });
+        });
+
+        // === NUEVO: Barras de reuniones (beige, encima) ===
+        teacherMeetings.forEach(m => {
+            const inicio = new Date(m.inicio);
+            const fin = new Date(m.fin);
+
+            // Leer como si fuera hora local (Directus la guardó como UTC literal)
+            const startTotalMin = (inicio.getUTCHours() * 60 + inicio.getUTCMinutes());
+            const endTotalMin = (fin.getUTCHours() * 60 + fin.getUTCMinutes());
+            const startMinutesRelative = startTotalMin - (START_HOUR * 60);
+            const left = (startMinutesRelative / (TOTAL_HOURS * 60)) * 100;
+
+            const durationMin = endTotalMin - startTotalMin;
+            const width = (durationMin / (TOTAL_HOURS * 60)) * 100;
+
+            totalMinutes += durationMin;
+
+            const gradientVars = `--color-start: ${MEETING_COLOR}; --color-end: ${MEETING_COLOR};`;
+
+            const fmt = (d) => `${d.getUTCHours().toString().padStart(2,'0')}:${d.getUTCMinutes().toString().padStart(2,'0')}`;
+
+            bars.push({
+                left: Math.max(0, left),
+                width: Math.max(0.8, width),
+                type: " is-meeting is-first is-last",
+                customStyle: gradientVars,
+                tooltip: `Reunión: ${fmt(inicio)} - ${fmt(fin)}`,
+                timeLabel: `Reunión ${fmt(inicio)}`
             });
         });
 

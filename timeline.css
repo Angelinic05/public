@@ -329,3 +329,7 @@
     text-align: right;
   }
 }
+
+.t-bar.is-meeting {
+    z-index: 5;
+}
