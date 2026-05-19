@@ -72,8 +72,27 @@ function toLocalDateString(iso) {
 }
 
 /* ══════════════════════════════════════════
-   LOGICA DE NORMALIZACIÓN DE NOMBRES
+   RESOLUCIÓN DE PROFESOR
 ══════════════════════════════════════════ */
+// Mapa email → profesor canónico. Es la fuente de verdad para asistencias.
+// Se usa por email porque el nombre que aparece en Zoom lo cambian los profes
+// con frecuencia ("Coach David - Speak Easy", "David A. Quiroga", etc.).
+const TEACHER_BY_EMAIL = {
+    "alejandra@speakeasy.com":    "ALEJANDRA RIVERA",
+    "christian@speakeasy.com":    "CHRISTIAN VELILLA",
+    "danielmoreno@speakeasy.com": "FELIPE MORENO",
+    "danielvalencia@speakeasy.com":"FELIPE VALENCIA",
+    "david@speakeasy.com":        "DAVID QUIROGA",
+    "paula@speakeasy.com":        "PAULA LONDOÑO"
+};
+
+function teacherFromEmail(email) {
+    if (!email) return "";
+    return TEACHER_BY_EMAIL[email.toLowerCase().trim()] || "";
+}
+
+// Fallback por nombre — solo se usa donde aún no tenemos email
+// (reuniones, zoom, chart). Si esos webhooks pasan a traer email, migrar también.
 function normalizeName(name) {
     if (!name) return "";
     let n = name.toUpperCase().trim();
@@ -82,9 +101,8 @@ function normalizeName(name) {
     if (n.includes("PAULA") && n.includes("LONDOÑO")) return "PAULA LONDOÑO";
     if (n.includes("FELIPE") && n.includes("VALENCIA")) return "FELIPE VALENCIA";
     if (n.includes("DAVID") && n.includes("QUIROGA")) return "DAVID QUIROGA";
-    if (n.includes("COACH DAVID")) return "DAVID QUIROGA"; // cuenta alterna "Coach David - Speak Easy"
     if (n.includes("ALEJANDRA") && n.includes("RIVERA")) return "ALEJANDRA RIVERA";
-    return n.replace(/\./g, "").trim(); 
+    return n.replace(/\./g, "").trim();
 }
 
 /* ══════════════════════════════════════════
@@ -133,7 +151,7 @@ function initTimeline() {
     );
 
         MASTER_TEACHERS.forEach(teacherName => {
-        const teacherLogs = filteredLogs.filter(log => normalizeName(log.name) === teacherName);
+        const teacherLogs = filteredLogs.filter(log => teacherFromEmail(log.teacher_email) === teacherName);
         teacherLogs.sort((a, b) => new Date(a.join) - new Date(b.join));
 
         // NUEVO: filtrar reuniones del profesor para selectedDate (hora local)
