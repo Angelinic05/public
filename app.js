@@ -59,6 +59,19 @@ const offset = today.getTimezoneOffset();
 const localToday = new Date(today.getTime() - (offset * 60 * 1000));
 let selectedDate = today.toLocaleDateString('en-CA'); // en-CA siempre da YYYY-MM-DD
 /* ══════════════════════════════════════════
+   HELPERS DE FECHA
+══════════════════════════════════════════ */
+// Devuelve YYYY-MM-DD en hora LOCAL del navegador (no UTC).
+// Necesario porque selectedDate viene en hora Colombia y los timestamps
+// llegan como UTC ISO ("...Z"): después de las 7 PM Colombia el día UTC
+// ya es el siguiente, así que comparar el prefijo del string desalinea
+// los registros al día equivocado.
+function toLocalDateString(iso) {
+    const d = new Date(iso);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+/* ══════════════════════════════════════════
    LOGICA DE NORMALIZACIÓN DE NOMBRES
 ══════════════════════════════════════════ */
 function normalizeName(name) {
@@ -69,6 +82,7 @@ function normalizeName(name) {
     if (n.includes("PAULA") && n.includes("LONDOÑO")) return "PAULA LONDOÑO";
     if (n.includes("FELIPE") && n.includes("VALENCIA")) return "FELIPE VALENCIA";
     if (n.includes("DAVID") && n.includes("QUIROGA")) return "DAVID QUIROGA";
+    if (n.includes("COACH DAVID")) return "DAVID QUIROGA"; // cuenta alterna "Coach David - Speak Easy"
     if (n.includes("ALEJANDRA") && n.includes("RIVERA")) return "ALEJANDRA RIVERA";
     return n.replace(/\./g, "").trim(); 
 }
@@ -113,8 +127,10 @@ function initTimeline() {
     if (!container) return;
     container.innerHTML = '';
 
-    // 1. Filtramos los datos por la fecha seleccionada
-    const filteredLogs = globalAttendanceData.filter(log => log.join && log.join.startsWith(selectedDate));
+    // 1. Filtramos los datos por la fecha seleccionada (en hora LOCAL, no por prefijo UTC)
+    const filteredLogs = globalAttendanceData.filter(
+        log => log.join && toLocalDateString(log.join) === selectedDate
+    );
 
         MASTER_TEACHERS.forEach(teacherName => {
         const teacherLogs = filteredLogs.filter(log => normalizeName(log.name) === teacherName);
@@ -380,8 +396,8 @@ async function updateWeeklyChart(dateString) {
                     if (!item.fecha_muestreo) return false;
 
                     // Validar que el registro pertenezca al día seleccionado en el dash
-                    // (item.fecha_muestreo suele ser YYYY-MM-DD...)
-                    if (!item.fecha_muestreo.startsWith(selectedDate)) return false;
+                    // (comparamos en hora LOCAL, no por prefijo UTC: ver toLocalDateString)
+                    if (toLocalDateString(item.fecha_muestreo) !== selectedDate) return false;
 
                     let itemTime = new Date(item.fecha_muestreo);
                     
